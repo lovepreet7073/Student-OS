@@ -1,0 +1,54 @@
+{
+  "common": {
+    "continue": "Continue",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading…",
+    "retry": "Try again"
+  },
+  "onboarding": {
+    "title": "Set up your studies",
+    "step_of": "Step {current} of {total}",
+    "finish": "Finish setup",
+    "board": {
+      "title": "Which board are you studying?",
+      "description": "This tailors your notes, papers and AI answers to the right syllabus."
+    },
+    "medium": {
+      "title": "Pick your medium",
+      "description": "Your study material — notes, papers and flashcards — will be in this language."
+    },
+    "class": {
+      "title": "What class are you in?",
+      "description": "We'll load the right chapters and past papers for your class."
+    },
+    "subjects": {
+      "title": "Choose your subjects",
+      "description": "We've pre-selected the usual ones. Tap to adjust.",
+      "count": "{count} selected",
+      "empty": "No subjects available for this combination yet."
+    },
+    "language": {
+      "title": "Interface language",
+      "description": "The language of buttons and menus. Your study material stays in your chosen medium.",
+      "note": "Study content follows your {medium} medium — only the app's interface changes here.",
+      "coming_soon": "Coming soon"
+    },
+    "summary": {
+      "title": "All set — quick check",
+      "description": "Everything look right? You can change any of this later in settings.",
+      "board": "Board",
+      "medium": "Medium",
+      "class": "Class",
+      "subjects": "Subjects",
+      "language": "Interface language",
+      "edit": "Edit"
+    },
+    "done": {
+      "title": "You're all set, let's go!",
+      "description": "Your workspace is personalised for {board} · {medium} · Class {class}.",
+      "cta": "Go to dashboard"
+    }
+  }
+}

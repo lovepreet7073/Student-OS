@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; }
+  body{ font-family:'Plus Jakarta Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; background:#F4F3EF; color:#1B1B22; }
+  ::-webkit-scrollbar{ width:0; height:0; }
+  @keyframes stepIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes pop{ 0%{ transform:scale(.6); opacity:0; } 60%{ transform:scale(1.08); } 100%{ transform:scale(1); opacity:1; } }
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="{{ ui.root }}">
+
+  <!-- desktop step rail -->
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ false }}">
+    <aside style="{{ ui.rail }}">
+      <div style="display:flex; align-items:center; gap:11px; margin-bottom:44px;">
+        <div style="width:36px; height:36px; border-radius:11px; background:#5B5FDB; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:18px;">S</div>
+        <span style="font-size:19px; font-weight:800; letter-spacing:-.02em;">StudyOS</span>
+      </div>
+      <div style="font-size:13px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; opacity:.4; margin-bottom:20px;">Academic setup</div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <sc-for list="{{ railSteps }}" as="r" hint-placeholder-count="6">
+          <button onClick="{{ r.go }}" style="{{ r.style }}">
+            <span style="{{ r.dot }}">
+              <sc-if value="{{ r.done }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></sc-if>
+              <sc-if value="{{ r.showNum }}" hint-placeholder-val="{{ true }}"><span>{{ r.n }}</span></sc-if>
+            </span>
+            <span>{{ r.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </aside>
+  </sc-if>
+
+  <main style="{{ ui.main }}">
+    <!-- top progress -->
+    <sc-if value="{{ showProgress }}" hint-placeholder-val="{{ true }}">
+    <header style="{{ ui.head }}">
+      <div style="{{ ui.headInner }}">
+        <button onClick="{{ back }}" style="{{ ui.backBtn }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+            <span style="font-size:13px; font-weight:700; opacity:.55;">Step {{ step }} of 6</span>
+            <span style="font-size:13px; font-weight:700; color:#5B5FDB;">{{ pctLabel }}</span>
+          </div>
+          <div style="height:7px; border-radius:99px; background:#E7E5DE; overflow:hidden;"><div style="height:100%; width:{{ pctLabel }}; background:#5B5FDB; border-radius:99px; transition:width .35s ease;"></div></div>
+        </div>
+      </div>
+    </header>
+    </sc-if>
+
+    <div style="{{ ui.scroll }}">
+      <div style="{{ ui.stage }}">
+
+        <!-- STEP 1 BOARD -->
+        <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:stepIn .3s ease both;">
+          <h1 style="{{ ui.qTitle }}">Which board are you studying?</h1>
+          <p style="{{ ui.qSub }}">This tailors your notes, papers and AI answers to the right syllabus.</p>
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:26px;">
+            <sc-for list="{{ boards }}" as="b" hint-placeholder-count="5">
+              <button onClick="{{ b.select }}" style="{{ b.style }}">
+                <span style="{{ b.badge }}">{{ b.abbr }}</span>
+                <span style="flex:1; text-align:left;"><span style="display:block; font-weight:700; font-size:16px;">{{ b.name }}</span><span style="display:block; font-size:13px; opacity:.6; margin-top:2px; line-height:1.4;">{{ b.desc }}</span></span>
+                <span style="{{ b.check }}"><sc-if value="{{ b.on }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></sc-if></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 2 MEDIUM -->
+        <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:stepIn .3s ease both;">
+          <h1 style="{{ ui.qTitle }}">Pick your medium</h1>
+          <p style="{{ ui.qSub }}">Your study material — notes, papers and flashcards — will be in this language.</p>
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:26px;">
+            <sc-for list="{{ mediums }}" as="m" hint-placeholder-count="3">
+              <button onClick="{{ m.select }}" style="{{ m.style }}">
+                <span style="{{ m.badge }}">{{ m.script }}</span>
+                <span style="flex:1; text-align:left;"><span style="display:block; font-weight:700; font-size:16px;">{{ m.name }}</span><span style="display:block; font-size:13px; opacity:.6; margin-top:2px;">{{ m.desc }}</span></span>
+                <span style="{{ m.check }}"><sc-if value="{{ m.on }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></sc-if></span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 3 CLASS -->
+        <sc-if value="{{ isStep3 }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:stepIn .3s ease both;">
+          <h1 style="{{ ui.qTitle }}">What class are you in?</h1>
+          <p style="{{ ui.qSub }}">We'll load the right chapters and past papers for your class.</p>
+          <div style="display:grid; grid-template-columns:repeat({{ classCols }},1fr); gap:12px; margin-top:26px;">
+            <sc-for list="{{ classes }}" as="c" hint-placeholder-count="12">
+              <button onClick="{{ c.select }}" style="{{ c.style }}">{{ c.n }}</button>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 4 SUBJECTS -->
+        <sc-if value="{{ isStep4 }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:stepIn .3s ease both;">
+          <h1 style="{{ ui.qTitle }}">Choose your subjects</h1>
+          <p style="{{ ui.qSub }}">We've pre-selected the usual ones for {{ boardAbbr }} Class {{ clsLabel }}. Tap to adjust.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:11px; margin-top:26px;">
+            <sc-for list="{{ subjectChips }}" as="s" hint-placeholder-count="9">
+              <button onClick="{{ s.toggle }}" style="{{ s.style }}">
+                <span style="{{ s.tick }}"><sc-if value="{{ s.on }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></sc-if></span>
+                {{ s.name }}
+              </button>
+            </sc-for>
+          </div>
+          <div style="font-size:13px; font-weight:700; opacity:.5; margin-top:20px;">{{ subjectCount }} selected</div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 5 LANGUAGE -->
+        <sc-if value="{{ isStep5 }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:stepIn .3s ease both;">
+          <h1 style="{{ ui.qTitle }}">Interface language</h1>
+          <p style="{{ ui.qSub }}">The language of buttons and menus. Your study material stays in your chosen medium.</p>
+          <div style="display:flex; flex-direction:column; gap:12px; margin-top:26px;">
+            <sc-for list="{{ languages }}" as="l" hint-placeholder-count="3">
+              <button onClick="{{ l.select }}" style="{{ l.style }}">
+                <span style="font-size:24px;">{{ l.flag }}</span>
+                <span style="flex:1; text-align:left;"><span style="display:block; font-weight:700; font-size:16px;">{{ l.name }}</span><sc-if value="{{ l.soon }}" hint-placeholder-val="{{ false }}"><span style="display:block; font-size:12.5px; opacity:.6; margin-top:1px;">Coming soon</span></sc-if></span>
+                <span style="{{ l.check }}"><sc-if value="{{ l.on }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></sc-if></span>
+              </button>
+            </sc-for>
+          </div>
+          <div style="{{ ui.note }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B5FDB" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/></svg><span>Study content follows your <strong>{{ mediumLabel }}</strong> medium — only the app's interface changes here.</span></div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 6 SUMMARY -->
+        <sc-if value="{{ isStep6 }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:stepIn .3s ease both;">
+          <h1 style="{{ ui.qTitle }}">All set — quick check</h1>
+          <p style="{{ ui.qSub }}">Everything look right? You can change any of this later in settings.</p>
+          <div style="background:#fff; border:1px solid #EAE8E2; border-radius:20px; overflow:hidden; margin-top:26px;">
+            <sc-for list="{{ summary }}" as="row" hint-placeholder-count="5">
+              <div style="{{ row.style }}">
+                <div style="min-width:0; flex:1;"><div style="font-size:12.5px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; opacity:.45;">{{ row.label }}</div><div style="font-weight:700; font-size:15.5px; margin-top:3px; text-wrap:pretty;">{{ row.value }}</div></div>
+                <button onClick="{{ row.edit }}" style="height:34px; padding:0 14px; border-radius:10px; border:1px solid #EAE8E2; background:#FAF9F6; font-family:inherit; font-weight:700; font-size:13px; color:#5B5FDB; cursor:pointer; flex-shrink:0;">Edit</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- DONE -->
+        <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center; padding-top:20px; animation:stepIn .35s ease both;">
+          <div style="width:88px; height:88px; border-radius:50%; background:#E7F6EE; display:flex; align-items:center; justify-content:center; margin:0 auto 24px; animation:pop .45s ease both;"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#2FB57C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>
+          <h1 style="font-size:30px; font-weight:800; letter-spacing:-.02em; margin:0 0 10px;">You're all set, let's go!</h1>
+          <p style="font-size:16px; opacity:.6; margin:0 auto; max-width:380px; line-height:1.5;">Your workspace is personalised for {{ boardAbbr }} · {{ mediumLabel }} · Class {{ clsLabel }}.</p>
+          <button onClick="{{ restart }}" style="{{ ui.doneBtn }}">Go to dashboard</button>
+        </div>
+        </sc-if>
+
+      </div>
+    </div>
+
+    <!-- footer continue -->
+    <sc-if value="{{ showFooter }}" hint-placeholder-val="{{ true }}">
+    <footer style="{{ ui.footer }}">
+      <div style="{{ ui.footerInner }}">
+        <button onClick="{{ next }}" style="{{ ui.continueBtn }}">{{ continueLabel }}</button>
+      </div>
+    </footer>
+    </sc-if>
+  </main>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { bp:'mobile', step:1, board:null, medium:null, cls:null, subjects:['Mathematics','Science','English','Social Science'], lang:'en' };
+  rootRef = React.createRef();
+
+  componentDidMount(){
+    const el = this.rootRef.current; if(!el) return;
+    const measure = () => { const w = el.clientWidth; const bp = w<720?'mobile':w<1080?'tablet':'desktop'; if(bp!==this.state.bp) this.setState({bp}); };
+    this.ro = new ResizeObserver(measure); this.ro.observe(el); measure();
+  }
+  componentWillUnmount(){ this.ro && this.ro.disconnect(); }
+
+  goStep = (n) => this.setState({ step:n });
+  next = () => this.setState(s => ({ step: Math.min(7, s.step+1) }));
+  back = () => this.setState(s => ({ step: Math.max(1, s.step-1) }));
+  restart = () => this.setState({ step:1 });
+  pick = (key, val) => this.setState({ [key]: val });
+  toggleSubject = (name) => this.setState(s => ({ subjects: s.subjects.includes(name) ? s.subjects.filter(x=>x!==name) : [...s.subjects, name] }));
+
+  renderVals(){
+    const C = { bg:'#F4F3EF', surface:'#FFFFFF', ink:'#1B1B22', sub:'#6C6C78', line:'#EAE8E2', accent:'#5B5FDB', accentSoft:'#ECEDFB' };
+    const bp = this.state.bp;
+    const isMobile = bp==='mobile', isDesktop = bp==='desktop';
+    const step = this.state.step;
+    const st = this.state;
+
+    const railW = 300;
+    const contentPad = isMobile ? '22px 20px 20px' : '30px 40px 24px';
+    const ui = {
+      root: { minHeight:'100%', height:'100%', display: isDesktop?'grid':'block', gridTemplateColumns: isDesktop?`${railW}px 1fr`:'none', background:C.bg, color:C.ink },
+      rail: { borderRight:`1px solid ${C.line}`, background:C.surface, padding:'34px 26px', display:'flex', flexDirection:'column' },
+      main: { display:'flex', flexDirection:'column', height: isDesktop?'100vh':'100dvh', minHeight:0 },
+      head: { flexShrink:0, padding: isMobile?'18px 20px 14px':'22px 40px 16px', borderBottom:`1px solid ${C.line}`, background:C.surface },
+      headInner: { maxWidth:640, margin:'0 auto', display:'flex', alignItems:'center', gap:14 },
+      backBtn: { width:40, height:40, borderRadius:12, border:`1px solid ${C.line}`, background:C.surface, color:C.ink, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 },
+      scroll: { flex:1, overflowY:'auto', minHeight:0 },
+      stage: { maxWidth:640, margin:'0 auto', padding: contentPad, width:'100%' },
+      qTitle: { fontSize: isMobile?26:30, fontWeight:800, letterSpacing:'-.02em', margin:'8px 0 8px', lineHeight:1.15, textWrap:'balance' },
+      qSub: { fontSize:15.5, lineHeight:1.5, opacity:.6, margin:0, textWrap:'pretty' },
+      note: { display:'flex', gap:10, marginTop:24, padding:'14px 16px', borderRadius:14, background:C.accentSoft, fontSize:13.5, lineHeight:1.5, color:'#3f3ca6' },
+      footer: { flexShrink:0, padding: isMobile?'14px 20px calc(14px + env(safe-area-inset-bottom))':'16px 40px', borderTop:`1px solid ${C.line}`, background: isMobile?'rgba(244,243,239,.9)':C.surface, backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)' },
+      footerInner: { maxWidth:640, margin:'0 auto' },
+      doneBtn: { height:54, padding:'0 28px', borderRadius:15, border:'none', background:C.accent, color:'#fff', fontFamily:'inherit', fontWeight:700, fontSize:16, cursor:'pointer', marginTop:32, boxShadow:'0 10px 26px -8px rgba(91,95,219,.55)' },
+    };
+
+    // continue button state
+    const valid = { 1:!!st.board, 2:!!st.medium, 3:!!st.cls, 4:st.subjects.length>0, 5:!!st.lang, 6:true }[step] ?? true;
+    ui.continueBtn = { width:'100%', height:54, borderRadius:15, border:'none', background: valid?C.accent:'#D8D6CE', color:'#fff', fontFamily:'inherit', fontWeight:700, fontSize:16, cursor: valid?'pointer':'not-allowed', transition:'background .2s', boxShadow: valid?'0 10px 26px -8px rgba(91,95,219,.5)':'none' };
+    const next = valid ? this.next : (()=>{});
+
+    // ---- selection card style helpers ----
+    const cardBase = { display:'flex', alignItems:'center', gap:14, width:'100%', padding:'15px 16px', borderRadius:16, background:C.surface, fontFamily:'inherit', cursor:'pointer', textAlign:'left', minHeight:44, transition:'border-color .15s, background .15s' };
+    const selCard = (on) => ({ ...cardBase, border: on?`2px solid ${C.accent}`:`1px solid ${C.line}`, background: on?C.accentSoft:C.surface, padding: on?'14px 15px':'15px 16px' });
+    const badge = (bg,fg) => ({ width:44, height:44, borderRadius:12, background:bg, color:fg, display:'flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:15, flexShrink:0 });
+    const checkCircle = (on) => ({ width:24, height:24, borderRadius:'50%', flexShrink:0, border: on?'none':`2px solid ${C.line}`, background: on?C.accent:'transparent', display:'flex', alignItems:'center', justifyContent:'center' });
+
+    // ---- data: boards ----
+    const boardData = [
+      { id:'pseb', abbr:'PSEB', name:'PSEB', desc:'Punjab School Education Board — state curriculum for Punjab.', color:'#E5533C' },
+      { id:'cbse', abbr:'CBSE', name:'CBSE', desc:'Central Board — the most widely used national curriculum.', color:'#5B5FDB' },
+      { id:'icse', abbr:'ICSE', name:'ICSE', desc:'Council for Indian Certificate — in-depth, English-focused.', color:'#2FB57C' },
+      { id:'state', abbr:'ST', name:'State Board', desc:"Your state's official board curriculum.", color:'#E8A13A' },
+      { id:'other', abbr:'+', name:'Other', desc:"Not listed? Pick this and tell us — we'll add it.", color:'#8B5CF6' },
+    ];
+    const boards = boardData.map(b => ({ ...b, on: st.board===b.id, select:()=>this.pick('board',b.id),
+      style: selCard(st.board===b.id), badge: badge(b.color+'1F', b.color), check: checkCircle(st.board===b.id) }));
+
+    // ---- mediums ----
+    const mediumData = [
+      { id:'en', name:'English Medium', desc:'Study content in English.', script:'A', color:'#5B5FDB' },
+      { id:'pa', name:'Punjabi Medium', desc:'ਪੰਜਾਬੀ ਵਿੱਚ ਪੜ੍ਹਾਈ ਸਮੱਗਰੀ।', script:'ੳ', color:'#E5533C' },
+      { id:'hi', name:'Hindi Medium', desc:'हिन्दी में अध्ययन सामग्री।', script:'अ', color:'#E8A13A' },
+    ];
+    const mediums = mediumData.map(m => ({ ...m, on: st.medium===m.id, select:()=>this.pick('medium',m.id),
+      style: selCard(st.medium===m.id), badge: badge(m.color+'1F', m.color), check: checkCircle(st.medium===m.id) }));
+
+    // ---- classes ----
+    const classCols = isMobile ? 4 : 6;
+    const classes = Array.from({length:12},(_,i)=>i+1).map(n => {
+      const on = st.cls===n;
+      return { n, select:()=>this.pick('cls',n),
+        style: { aspectRatio:'1', borderRadius:15, border: on?`2px solid ${C.accent}`:`1px solid ${C.line}`, background: on?C.accent:C.surface, color: on?'#fff':C.ink, fontFamily:'inherit', fontWeight:800, fontSize:20, cursor:'pointer', transition:'all .15s' } };
+    });
+
+    // ---- subjects ----
+    const subjectPool = ['Mathematics','Science','English','Punjabi','Social Science','Computer Science','Hindi','Physical Education','Art'];
+    const subjectChips = subjectPool.map(name => {
+      const on = st.subjects.includes(name);
+      return { name, on, toggle:()=>this.toggleSubject(name),
+        style: { display:'inline-flex', alignItems:'center', gap:9, padding: on?'11px 17px 11px 13px':'12px 18px 12px 14px', borderRadius:999, border: on?`2px solid ${C.accent}`:`1px solid ${C.line}`, background: on?C.accentSoft:C.surface, color: on?'#3f3ca6':C.ink, fontFamily:'inherit', fontWeight:700, fontSize:14.5, cursor:'pointer', minHeight:44 },
+        tick: { width:20, height:20, borderRadius:'50%', flexShrink:0, border: on?'none':`2px solid ${C.line}`, background: on?C.accent:'transparent', display:'flex', alignItems:'center', justifyContent:'center' } };
+    });
+
+    // ---- languages ----
+    const langData = [
+      { id:'en', name:'English', flag:'🇬🇧', soon:false },
+      { id:'pa', name:'ਪੰਜਾਬੀ', flag:'🇮🇳', soon:false },
+      { id:'hi', name:'हिन्दी', flag:'🇮🇳', soon:true },
+    ];
+    const languages = langData.map(l => ({ ...l, on: st.lang===l.id, select: l.soon?(()=>{}):(()=>this.pick('lang',l.id)),
+      style: { ...selCard(st.lang===l.id), opacity: l.soon?.5:1, cursor: l.soon?'not-allowed':'pointer' }, check: checkCircle(st.lang===l.id) }));
+
+    // ---- labels ----
+    const boardAbbr = (boardData.find(b=>b.id===st.board)||{}).abbr || '—';
+    const mediumLabel = ({en:'English',pa:'Punjabi',hi:'Hindi'})[st.medium] || 'English';
+    const clsLabel = st.cls || '—';
+    const langLabel = (langData.find(l=>l.id===st.lang)||{}).name || 'English';
+
+    // ---- summary ----
+    const summaryData = [
+      { label:'Board', value:(boardData.find(b=>b.id===st.board)||{}).name||'Not set', step:1 },
+      { label:'Medium', value:mediumLabel+' Medium', step:2 },
+      { label:'Class', value:'Class '+clsLabel, step:3 },
+      { label:'Subjects', value: st.subjects.join(', ')||'None', step:4 },
+      { label:'Interface language', value:langLabel, step:5 },
+    ];
+    const summary = summaryData.map((r,i) => ({ ...r, edit:()=>this.goStep(r.step),
+      style: { display:'flex', align:'center', alignItems:'center', gap:14, padding:'16px 18px', borderTop: i===0?'none':`1px solid ${C.line}` } }));
+
+    // ---- rail ----
+    const railLabels = ['Board','Medium','Class','Subjects','Language','Summary'];
+    const railSteps = railLabels.map((label,i) => {
+      const n = i+1; const done = step>n; const active = step===n;
+      return { n, label, done, showNum:!done, go:()=>this.goStep(n),
+        style: { display:'flex', alignItems:'center', gap:13, width:'100%', padding:'11px 12px', borderRadius:12, border:'none', background: active?C.accentSoft:'transparent', color: active?'#3f3ca6':(step>=n?C.ink:C.sub), fontFamily:'inherit', fontWeight:700, fontSize:14.5, cursor:'pointer', textAlign:'left' },
+        dot: { width:28, height:28, borderRadius:'50%', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, fontWeight:800, background: done?C.accent:(active?C.accent:'#EDEBE4'), color: (done||active)?'#fff':C.sub } };
+    });
+
+    return {
+      rootRef:this.rootRef, ui, isDesktop, step,
+      showProgress: step<=6, showFooter: step<=6, showHeaderBrand:!isDesktop,
+      pctLabel: Math.round((step/6)*100)+'%',
+      isStep1:step===1, isStep2:step===2, isStep3:step===3, isStep4:step===4, isStep5:step===5, isStep6:step===6, isDone:step===7,
+      back:this.back, next, restart:this.restart,
+      boards, mediums, classes, classCols, subjectChips, subjectCount:st.subjects.length, languages, summary, railSteps,
+      boardAbbr, mediumLabel, clsLabel,
+      continueLabel: step===6 ? 'Finish setup' : 'Continue',
+    };
+  }
+}
+</script>
+</body>
+</html>

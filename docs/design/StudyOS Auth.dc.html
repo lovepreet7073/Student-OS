@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; scroll-behavior:smooth; }
+  body{ font-family:'Plus Jakarta Sans',system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  ::-webkit-scrollbar{ width:0; height:0; background:transparent; }
+  input::placeholder{ color:currentColor; opacity:.4; }
+  @keyframes scIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:translateY(0); } }
+  @keyframes floaty{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
+</style>
+</helmet>
+<div ref="{{ rootRef }}" style="{{ ui.root }}">
+
+  <!-- ================= LANDING ================= -->
+  <sc-if value="{{ viewLanding }}" hint-placeholder-val="{{ true }}">
+  <div>
+    <nav style="{{ ui.nav }}">
+      <div style="{{ ui.navInner }}">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="width:32px; height:32px; border-radius:9px; background:#5B5FDB; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:16px;">S</div>
+          <span style="font-size:18px; font-weight:800; letter-spacing:-.02em;">StudyOS</span>
+        </div>
+        <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; gap:30px; font-size:15px; font-weight:600;">
+            <a href="#features" style="{{ ui.navLink }}">Features</a>
+            <a href="#how" style="{{ ui.navLink }}">How it works</a>
+            <a href="#faq" style="{{ ui.navLink }}">FAQ</a>
+          </div>
+        </sc-if>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button onClick="{{ toggleTheme }}" aria-label="Toggle theme" style="{{ ui.iconBtn }}">{{ themeIcon }}</button>
+          <sc-if value="{{ showLoginLink }}" hint-placeholder-val="{{ true }}"><button onClick="{{ goLogin }}" style="{{ ui.ghostBtn }}">Login</button></sc-if>
+          <button onClick="{{ goRegister }}" style="{{ ui.primaryBtnSm }}">Get Started</button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section style="{{ ui.hero }}">
+      <div style="{{ ui.heroInner }}">
+        <div style="{{ ui.heroCopy }}">
+          <div style="display:inline-flex; align-items:center; gap:8px; padding:6px 13px; border-radius:999px; background:#ECEDFB; color:#5148c9; font-size:13px; font-weight:700; margin-bottom:22px; white-space:nowrap;">
+            <span style="width:7px; height:7px; border-radius:50%; background:#5B5FDB;"></span>Now with AI tutoring
+          </div>
+          <h1 style="{{ ui.h1 }}">The AI Operating System for Students</h1>
+          <p style="{{ ui.heroSub }}">Organize notes, previous papers, study plans, AI tutoring, flashcards and exams in one beautiful workspace.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:32px;">
+            <button onClick="{{ goRegister }}" style="{{ ui.primaryBtn }}">Get Started — it's free</button>
+            <button onClick="{{ goLogin }}" style="{{ ui.secondaryBtn }}">Login</button>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px; margin-top:26px; font-size:13.5px; opacity:.6;">
+            <div style="display:flex;">
+              <span style="width:28px; height:28px; border-radius:50%; background:#E5533C; border:2px solid; border-color:{{ c.bg }}; display:inline-block;"></span>
+              <span style="width:28px; height:28px; border-radius:50%; background:#2FB57C; border:2px solid; border-color:{{ c.bg }}; margin-left:-9px; display:inline-block;"></span>
+              <span style="width:28px; height:28px; border-radius:50%; background:#E8A13A; border:2px solid; border-color:{{ c.bg }}; margin-left:-9px; display:inline-block;"></span>
+            </div>
+            Loved by 12,000+ students
+          </div>
+        </div>
+        <div style="{{ ui.heroArt }}">
+          <div style="{{ ui.mockCard }}">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+              <div><div style="font-size:12px; opacity:.5; font-weight:600;">Good morning</div><div style="font-size:19px; font-weight:800;">Today's plan</div></div>
+              <div style="width:36px; height:36px; border-radius:50%; background:#E5533C;"></div>
+            </div>
+            <div style="background:#5B5FDB; border-radius:15px; padding:15px; color:#fff; margin-bottom:12px;">
+              <div style="font-size:11px; opacity:.8; font-weight:700; letter-spacing:.05em;">CONTINUE</div>
+              <div style="font-weight:800; font-size:16px; margin:3px 0 10px;">Cell Structure</div>
+              <div style="height:6px; border-radius:99px; background:rgba(255,255,255,.25);"><div style="height:100%; width:60%; background:#fff; border-radius:99px;"></div></div>
+            </div>
+            <div style="{{ ui.mockRow }}"><span style="width:20px; height:20px; border-radius:6px; background:#5B5FDB;"></span><span style="flex:1; height:9px; border-radius:99px; background:currentColor; opacity:.12;"></span></div>
+            <div style="{{ ui.mockRow }}"><span style="width:20px; height:20px; border-radius:6px; border:2px solid; opacity:.3;"></span><span style="flex:1; height:9px; border-radius:99px; background:currentColor; opacity:.12;"></span></div>
+            <div style="{{ ui.mockRow }}"><span style="width:20px; height:20px; border-radius:6px; border:2px solid; opacity:.3;"></span><span style="flex:1; height:9px; border-radius:99px; background:currentColor; opacity:.12;"></span></div>
+          </div>
+          <div style="{{ ui.floatBadge }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#F0803C" stroke="#F0803C"><path d="M12 3c3 4 5 6 5 9a5 5 0 0 1-10 0c0-1.5.7-2.8 1.5-3.7.3 1 .9 1.7 1.7 1.7C10.5 8.5 10 6 12 3Z"/></svg>
+            <span style="font-weight:800; font-size:15px;">12 day streak</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOGO STRIP -->
+    <div style="{{ ui.pad }}">
+      <div style="max-width:1200px; margin:0 auto; text-align:center; font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; opacity:.4;">Trusted across boards · CBSE · ICSE · PSEB · State</div>
+    </div>
+
+    <!-- FEATURES -->
+    <section id="features" style="{{ ui.section }}">
+      <div style="max-width:1200px; margin:0 auto;">
+        <div style="text-align:center; max-width:640px; margin:0 auto 46px;">
+          <div style="{{ ui.eyebrow }}">Everything in one place</div>
+          <h2 style="{{ ui.h2 }}">One workspace for your whole study life</h2>
+          <p style="{{ ui.lead }}">Nine tools that used to live in nine apps — now unified, fast, and built for how students actually work.</p>
+        </div>
+        <div style="{{ ui.featGrid }}">
+          <sc-for list="{{ features }}" as="f" hint-placeholder-count="9">
+            <div style="{{ ui.card }}">
+              <div style="width:44px; height:44px; border-radius:13px; background:{{ f.tint }}; color:{{ f.color }}; display:flex; align-items:center; justify-content:center; margin-bottom:15px;">{{ f.iconEl }}</div>
+              <div style="font-weight:700; font-size:16.5px; letter-spacing:-.01em;">{{ f.name }}</div>
+              <div style="font-size:14px; opacity:.6; margin-top:6px; line-height:1.5; text-wrap:pretty;">{{ f.desc }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY -->
+    <section style="{{ ui.sectionAlt }}">
+      <div style="max-width:1200px; margin:0 auto;">
+        <div style="{{ ui.whyGrid }}">
+          <div>
+            <div style="{{ ui.eyebrow }}">Why StudyOS</div>
+            <h2 style="{{ ui.h2 }}">Built to remove friction, not add features</h2>
+            <p style="{{ ui.lead }}">Most study apps are cluttered. StudyOS is calm, fast and focused — so you spend energy learning, not managing tabs.</p>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:18px;">
+            <sc-for list="{{ whys }}" as="w" hint-placeholder-count="4">
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <span style="width:26px; height:26px; border-radius:8px; background:#ECEDFB; color:#5B5FDB; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span>
+                <div><div style="font-weight:700; font-size:16px;">{{ w.t }}</div><div style="font-size:14px; opacity:.6; margin-top:3px; line-height:1.5;">{{ w.d }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" style="{{ ui.section }}">
+      <div style="max-width:1200px; margin:0 auto;">
+        <div style="text-align:center; max-width:600px; margin:0 auto 46px;">
+          <div style="{{ ui.eyebrow }}">How it works</div>
+          <h2 style="{{ ui.h2 }}">Set up in under two minutes</h2>
+        </div>
+        <div style="{{ ui.stepsGrid }}">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="4">
+            <div style="{{ ui.card }}">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+                <span style="width:38px; height:38px; border-radius:11px; background:#5B5FDB; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px;">{{ s.n }}</span>
+                <span style="font-size:13px; font-weight:700; opacity:.35;">{{ s.tag }}</span>
+              </div>
+              <div style="font-weight:700; font-size:16.5px;">{{ s.t }}</div>
+              <div style="font-size:14px; opacity:.6; margin-top:6px; line-height:1.5;">{{ s.d }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section style="{{ ui.sectionAlt }}">
+      <div style="max-width:1200px; margin:0 auto;">
+        <div style="text-align:center; max-width:600px; margin:0 auto 46px;">
+          <div style="{{ ui.eyebrow }}">Loved by students</div>
+          <h2 style="{{ ui.h2 }}">Fewer tabs. Better grades.</h2>
+        </div>
+        <div style="{{ ui.testGrid }}">
+          <sc-for list="{{ testimonials }}" as="t" hint-placeholder-count="3">
+            <div style="{{ ui.card }}">
+              <div style="display:flex; gap:3px; color:#E8A13A; margin-bottom:14px;">{{ t.stars }}</div>
+              <p style="font-size:15.5px; line-height:1.6; margin:0 0 18px; text-wrap:pretty;">{{ t.quote }}</p>
+              <div style="display:flex; align-items:center; gap:11px;">
+                <span style="width:40px; height:40px; border-radius:50%; background:{{ t.color }}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700;">{{ t.initial }}</span>
+                <div><div style="font-weight:700; font-size:14.5px;">{{ t.name }}</div><div style="font-size:12.5px; opacity:.55;">{{ t.role }}</div></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" style="{{ ui.section }}">
+      <div style="max-width:760px; margin:0 auto;">
+        <div style="text-align:center; margin-bottom:40px;">
+          <div style="{{ ui.eyebrow }}">FAQ</div>
+          <h2 style="{{ ui.h2 }}">Questions, answered</h2>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <sc-for list="{{ faqs }}" as="q" hint-placeholder-count="5">
+            <div style="{{ q.wrapStyle }}">
+              <button onClick="{{ q.toggle }}" style="display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; background:transparent; border:none; padding:0; cursor:pointer; font-family:inherit; color:inherit; text-align:left;">
+                <span style="font-weight:700; font-size:16px;">{{ q.q }}</span>
+                <span style="{{ q.iconStyle }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+              </button>
+              <sc-if value="{{ q.open }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:14px 0 0; font-size:14.5px; line-height:1.6; opacity:.65; text-wrap:pretty;">{{ q.a }}</p>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section style="{{ ui.pad }}">
+      <div style="max-width:1200px; margin:0 auto;">
+        <div style="{{ ui.ctaBand }}">
+          <h2 style="font-size:{{ ctaSize }}; font-weight:800; letter-spacing:-.02em; margin:0 0 12px; color:#fff; text-wrap:balance;">Start studying smarter today</h2>
+          <p style="font-size:16px; color:rgba(255,255,255,.85); margin:0 0 26px; max-width:480px;">Free to start. No card required. Bring your notes and let the AI do the busywork.</p>
+          <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:center;">
+            <button onClick="{{ goRegister }}" style="height:52px; padding:0 26px; border-radius:14px; border:none; background:#fff; color:#5B5FDB; font-family:inherit; font-weight:700; font-size:16px; cursor:pointer;">Get Started</button>
+            <button onClick="{{ goLogin }}" style="height:52px; padding:0 26px; border-radius:14px; border:1px solid rgba(255,255,255,.4); background:transparent; color:#fff; font-family:inherit; font-weight:700; font-size:16px; cursor:pointer;">Login</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="{{ ui.footer }}">
+      <div style="{{ ui.footerInner }}">
+        <div style="max-width:280px;">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+            <div style="width:30px; height:30px; border-radius:8px; background:#5B5FDB; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800;">S</div>
+            <span style="font-size:17px; font-weight:800;">StudyOS</span>
+          </div>
+          <p style="font-size:14px; opacity:.55; line-height:1.6; margin:0;">The AI operating system for students. Built for focus.</p>
+        </div>
+        <div style="{{ ui.footerCols }}">
+          <sc-for list="{{ footerCols }}" as="col" hint-placeholder-count="3">
+            <div>
+              <div style="font-size:13px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; opacity:.4; margin-bottom:14px;">{{ col.h }}</div>
+              <div style="display:flex; flex-direction:column; gap:11px;">
+                <sc-for list="{{ col.items }}" as="it" hint-placeholder-count="4">
+                  <a href="#" style="{{ ui.footLink }}">{{ it }}</a>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="{{ ui.footerBar }}">
+        <span style="font-size:13px; opacity:.5;">© 2026 StudyOS. All rights reserved.</span>
+        <div style="display:flex; gap:20px; font-size:13px;"><a href="#" style="{{ ui.footLink }}">Privacy</a><a href="#" style="{{ ui.footLink }}">Terms</a></div>
+      </div>
+    </footer>
+  </div>
+  </sc-if>
+
+  <!-- ================= LOGIN ================= -->
+  <sc-if value="{{ viewLogin }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ ui.authWrap }}">
+    <sc-if value="{{ showBrandPanel }}" hint-placeholder-val="{{ false }}"><div style="{{ ui.brandPanel }}">
+      <div>
+        <div style="display:flex; align-items:center; gap:11px;"><div style="width:34px; height:34px; border-radius:10px; background:#fff; color:#5B5FDB; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px;">S</div><span style="font-size:20px; font-weight:800; color:#fff;">StudyOS</span></div>
+      </div>
+      <div>
+        <div style="font-size:26px; font-weight:800; color:#fff; letter-spacing:-.02em; line-height:1.25; text-wrap:balance;">"StudyOS replaced five apps. My exam prep has never felt this calm."</div>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:22px;"><span style="width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,.2); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700;">AR</span><div><div style="color:#fff; font-weight:700;">Aisha Rahman</div><div style="color:rgba(255,255,255,.7); font-size:13px;">Class 12 · CBSE</div></div></div>
+      </div>
+      <div style="color:rgba(255,255,255,.6); font-size:13px;">Trusted by 12,000+ students across India</div>
+    </div></sc-if>
+
+    <div style="{{ ui.formPane }}">
+      <div style="{{ ui.formCard }}">
+        <button onClick="{{ goLanding }}" style="{{ ui.backBtn }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:26px;">
+          <div style="width:34px; height:34px; border-radius:10px; background:#5B5FDB; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800;">S</div>
+          <span style="font-size:18px; font-weight:800;">StudyOS</span>
+        </div>
+        <h1 style="font-size:26px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px;">Welcome back</h1>
+        <p style="font-size:15px; opacity:.6; margin:0 0 26px;">Log in to pick up where you left off.</p>
+
+        <button style="{{ ui.googleBtn }}"><span style="{{ ui.googleG }}">G</span>Continue with Google</button>
+        <div style="{{ ui.divider }}"><span style="{{ ui.dividerLine }}"></span><span style="font-size:13px; opacity:.5; font-weight:600;">or</span><span style="{{ ui.dividerLine }}"></span></div>
+
+        <label style="{{ ui.label }}">Email</label>
+        <input type="email" placeholder="you@school.edu" style="{{ ui.input }}"/>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin:18px 0 7px;"><label style="{{ ui.labelInline }}">Password</label><span style="font-size:13px; font-weight:700; color:#5B5FDB; cursor:pointer;">Forgot?</span></div>
+        <div style="{{ ui.pwWrap }}"><input type="{{ pwType }}" placeholder="••••••••" style="{{ ui.pwInput }}"/><button onClick="{{ togglePw }}" style="{{ ui.pwToggle }}">{{ pwToggleLabel }}</button></div>
+        <label style="display:flex; align-items:center; gap:10px; margin-top:18px; cursor:pointer; font-size:14px;"><span style="{{ ui.remBox }}"><sc-if value="{{ remember }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></sc-if></span><input type="checkbox" onChange="{{ toggleRemember }}" style="display:none;"/>Remember me for 30 days</label>
+
+        <button style="{{ ui.submitBtn }}">Log in</button>
+        <p style="text-align:center; font-size:14.5px; opacity:.7; margin:22px 0 0;">New to StudyOS? <span onClick="{{ goRegister }}" style="color:#5B5FDB; font-weight:700; cursor:pointer;">Create an account</span></p>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ================= REGISTER ================= -->
+  <sc-if value="{{ viewRegister }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ ui.authWrap }}">
+    <sc-if value="{{ showBrandPanel }}" hint-placeholder-val="{{ false }}"><div style="{{ ui.brandPanel }}">
+      <div>
+        <div style="display:flex; align-items:center; gap:11px;"><div style="width:34px; height:34px; border-radius:10px; background:#fff; color:#5B5FDB; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:17px;">S</div><span style="font-size:20px; font-weight:800; color:#fff;">StudyOS</span></div>
+      </div>
+      <div>
+        <div style="font-size:26px; font-weight:800; color:#fff; letter-spacing:-.02em; line-height:1.3;">Join 12,000+ students</div>
+        <div style="display:flex; flex-direction:column; gap:15px; margin-top:24px;">
+          <sc-for list="{{ regPerks }}" as="p" hint-placeholder-count="3">
+            <div style="display:flex; align-items:center; gap:12px; color:#fff;"><span style="width:24px; height:24px; border-radius:7px; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></span><span style="font-size:15px; font-weight:600;">{{ p }}</span></div>
+          </sc-for>
+        </div>
+      </div>
+      <div style="color:rgba(255,255,255,.6); font-size:13px;">Free forever plan · No credit card</div>
+    </div></sc-if>
+
+    <div style="{{ ui.formPane }}">
+      <div style="{{ ui.formCard }}">
+        <button onClick="{{ goLanding }}" style="{{ ui.backBtn }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>Back</button>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:26px;">
+          <div style="width:34px; height:34px; border-radius:10px; background:#5B5FDB; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800;">S</div>
+          <span style="font-size:18px; font-weight:800;">StudyOS</span>
+        </div>
+        <h1 style="font-size:26px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px;">Create your account</h1>
+        <p style="font-size:15px; opacity:.6; margin:0 0 26px;">Start organizing your study life in minutes.</p>
+
+        <button style="{{ ui.googleBtn }}"><span style="{{ ui.googleG }}">G</span>Continue with Google</button>
+        <div style="{{ ui.divider }}"><span style="{{ ui.dividerLine }}"></span><span style="font-size:13px; opacity:.5; font-weight:600;">or</span><span style="{{ ui.dividerLine }}"></span></div>
+
+        <label style="{{ ui.label }}">Full name</label>
+        <input type="text" placeholder="Maya Adeyemi" style="{{ ui.input }}"/>
+        <label style="{{ ui.label }}; margin-top:18px;">Email</label>
+        <input type="email" placeholder="you@school.edu" style="{{ ui.input }}"/>
+        <label style="{{ ui.label }}; margin-top:18px;">Password</label>
+        <div style="{{ ui.pwWrap }}"><input type="{{ pwType }}" value="{{ pwValue }}" onInput="{{ setPw }}" placeholder="Create a strong password" style="{{ ui.pwInput }}"/><button onClick="{{ togglePw }}" style="{{ ui.pwToggle }}">{{ pwToggleLabel }}</button></div>
+        <div style="display:flex; gap:5px; margin-top:10px;">
+          <sc-for list="{{ pwBars }}" as="b" hint-placeholder-count="4"><span style="{{ b.style }}"></span></sc-for>
+        </div>
+        <div style="font-size:12.5px; opacity:.6; margin-top:6px; font-weight:600; color:{{ pwColor }};">{{ pwLabel }}</div>
+
+        <label style="{{ ui.label }}; margin-top:18px;">Confirm password</label>
+        <input type="password" placeholder="Re-enter password" style="{{ ui.input }}"/>
+
+        <label style="display:flex; align-items:flex-start; gap:11px; margin-top:20px; cursor:pointer; font-size:13.5px; line-height:1.5;"><span style="{{ ui.agreeBox }}"><sc-if value="{{ agree }}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></sc-if></span><input type="checkbox" onChange="{{ toggleAgree }}" style="display:none;"/><span style="opacity:.75;">I agree to the <span style="color:#5B5FDB; font-weight:700;">Terms</span> and <span style="color:#5B5FDB; font-weight:700;">Privacy Policy</span></span></label>
+
+        <button style="{{ ui.submitBtn }}">Create account</button>
+        <p style="text-align:center; font-size:14.5px; opacity:.7; margin:22px 0 0;">Already have an account? <span onClick="{{ goLogin }}" style="color:#5B5FDB; font-weight:700; cursor:pointer;">Log in</span></p>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { theme:'light', view:'landing', faq:0, showPw:false, remember:false, agree:false, pw:'', bp:'mobile' };
+  rootRef = React.createRef();
+
+  componentDidMount(){
+    const el = this.rootRef.current; if(!el) return;
+    const measure = () => { const w = el.clientWidth; const bp = w<700?'mobile':w<1080?'tablet':'desktop'; if(bp!==this.state.bp) this.setState({bp}); };
+    this.ro = new ResizeObserver(measure); this.ro.observe(el); measure();
+  }
+  componentWillUnmount(){ this.ro && this.ro.disconnect(); }
+
+  set = (o) => this.setState(o);
+  goLanding = () => this.setState({view:'landing'});
+  goLogin = () => this.setState({view:'login'});
+  goRegister = () => this.setState({view:'register'});
+  toggleTheme = () => this.setState(s=>({theme:s.theme==='light'?'dark':'light'}));
+  togglePw = () => this.setState(s=>({showPw:!s.showPw}));
+  toggleRemember = () => this.setState(s=>({remember:!s.remember}));
+  toggleAgree = () => this.setState(s=>({agree:!s.agree}));
+  toggleFaq = (i) => this.setState(s=>({faq:s.faq===i?null:i}));
+  setPw = (e) => this.setState({pw:e.target.value});
+
+  svg(d, fill){ return React.createElement('svg',{width:22,height:22,viewBox:'0 0 24 24',fill:fill||'none',stroke:'currentColor',strokeWidth:1.8,strokeLinecap:'round',strokeLinejoin:'round'}, ...d.map((p,i)=>React.createElement('path',{key:i,d:p}))); }
+
+  renderVals(){
+    const L = { bg:'#F4F3EF', bgAlt:'#FFFFFF', surface:'#FFFFFF', surfaceAlt:'#FAF9F6', ink:'#1B1B22', line:'#EAE8E2', shadow:'0 1px 3px rgba(20,18,30,.04), 0 10px 30px -12px rgba(20,18,30,.10)' };
+    const D = { bg:'#111017', bgAlt:'#16151E', surface:'#1B1A23', surfaceAlt:'#201F2A', ink:'#F2F1F7', line:'#2A2934', shadow:'0 1px 3px rgba(0,0,0,.4), 0 12px 34px -12px rgba(0,0,0,.6)' };
+    const dark = this.state.theme==='dark';
+    const c = dark ? D : L;
+    const bp = this.state.bp;
+    const isMobile = bp==='mobile', isTablet = bp==='tablet', isDesktop = bp==='desktop';
+    const accent = '#5B5FDB';
+    const view = this.state.view;
+    const sx = isMobile?20:isTablet?44:80;
+    const sy = isMobile?60:isDesktop?96:80;
+    const pad = { padding:`0 ${sx}px` };
+
+    const card = { background:c.surface, border:`1px solid ${c.line}`, borderRadius:20, padding:22, boxShadow:c.shadow };
+    const btnBase = { fontFamily:'inherit', cursor:'pointer', fontWeight:700, display:'inline-flex', alignItems:'center', justifyContent:'center', gap:8, whiteSpace:'nowrap' };
+
+    const inputStyle = { width:'100%', height:50, borderRadius:13, border:`1px solid ${c.line}`, background:dark?c.surfaceAlt:'#fff', color:c.ink, fontFamily:'inherit', fontSize:15, padding:'0 15px', outline:'none' };
+
+    const ui = {
+      root: { minHeight:'100%', background:c.bg, color:c.ink, position:'relative', overflowX:'hidden', transition:'background .3s, color .3s' },
+      // nav
+      nav: { position:'sticky', top:0, zIndex:20, background: dark?'rgba(17,16,23,.8)':'rgba(244,243,239,.8)', backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)', borderBottom:`1px solid ${c.line}` },
+      navInner: { maxWidth:1200, margin:'0 auto', height:66, ...pad, display:'flex', alignItems:'center', justifyContent:'space-between' },
+      navLink: { color:c.ink, opacity:.7, textDecoration:'none' },
+      iconBtn: { ...btnBase, width:40, height:40, borderRadius:11, border:`1px solid ${c.line}`, background:'transparent', color:c.ink, fontSize:16 },
+      ghostBtn: { ...btnBase, height:40, padding:'0 16px', borderRadius:11, border:'none', background:'transparent', color:c.ink, fontSize:14.5 },
+      primaryBtnSm: { ...btnBase, height:40, padding:'0 18px', borderRadius:11, border:'none', background:accent, color:'#fff', fontSize:14.5 },
+      // hero
+      hero: { ...pad, paddingTop: isMobile?44:70, paddingBottom: sy },
+      heroInner: { maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns: isDesktop?'1.05fr .95fr':'1fr', gap: isDesktop?60:44, alignItems:'center' },
+      heroCopy: { textAlign: isDesktop?'left':'center', maxWidth: isDesktop?'none':620, marginLeft:'auto', marginRight:'auto' },
+      h1: { fontSize: isMobile?38:isTablet?52:60, lineHeight:1.05, fontWeight:800, letterSpacing:'-.03em', margin:'0 0 20px', textWrap:'balance' },
+      heroSub: { fontSize: isMobile?16.5:19, lineHeight:1.55, opacity:.62, margin:0, maxWidth:520, marginLeft: isDesktop?0:'auto', marginRight: isDesktop?0:'auto', textWrap:'pretty' },
+      primaryBtn: { ...btnBase, height:54, padding:'0 24px', borderRadius:15, border:'none', background:accent, color:'#fff', fontSize:16, boxShadow:'0 10px 26px -8px rgba(91,95,219,.6)' },
+      secondaryBtn: { ...btnBase, height:54, padding:'0 24px', borderRadius:15, border:`1px solid ${c.line}`, background:c.surface, color:c.ink, fontSize:16 },
+      heroArt: { position:'relative', display:'flex', justifyContent:'center', order: isDesktop?2:-1 },
+      mockCard: { width:'100%', maxWidth:360, background:c.surface, border:`1px solid ${c.line}`, borderRadius:24, padding:20, boxShadow:c.shadow, color:c.ink },
+      mockRow: { display:'flex', alignItems:'center', gap:11, padding:'11px 0' },
+      floatBadge: { position:'absolute', bottom: isMobile?-6:20, right: isMobile?4:-6, display:'flex', alignItems:'center', gap:8, background:c.surface, border:`1px solid ${c.line}`, borderRadius:14, padding:'11px 15px', boxShadow:c.shadow, animation:'floaty 4s ease-in-out infinite' },
+      // sections
+      pad: { ...pad, paddingTop: isMobile?36:48, paddingBottom: isMobile?36:48 },
+      section: { ...pad, paddingTop:sy, paddingBottom:sy },
+      sectionAlt: { ...pad, paddingTop:sy, paddingBottom:sy, background:c.surfaceAlt, borderTop:`1px solid ${c.line}`, borderBottom:`1px solid ${c.line}` },
+      eyebrow: { fontSize:13, fontWeight:800, letterSpacing:'.08em', textTransform:'uppercase', color:accent, marginBottom:14 },
+      h2: { fontSize: isMobile?28:38, fontWeight:800, letterSpacing:'-.02em', margin:'0 0 16px', lineHeight:1.15, textWrap:'balance' },
+      lead: { fontSize:17, lineHeight:1.55, opacity:.6, margin:0, textWrap:'pretty' },
+      card,
+      featGrid: { display:'grid', gridTemplateColumns:`repeat(${isMobile?1:isTablet?2:3},1fr)`, gap:16 },
+      whyGrid: { display:'grid', gridTemplateColumns: isDesktop?'1fr 1fr':'1fr', gap: isDesktop?64:36, alignItems:'center' },
+      stepsGrid: { display:'grid', gridTemplateColumns:`repeat(${isMobile?1:isTablet?2:4},1fr)`, gap:16 },
+      testGrid: { display:'grid', gridTemplateColumns:`repeat(${isMobile?1:isTablet?2:3},1fr)`, gap:16 },
+      ctaBand: { background:`linear-gradient(135deg, ${accent}, #4a44c9)`, borderRadius:28, padding: isMobile?'44px 24px':'64px 40px', textAlign:'center', boxShadow:'0 30px 60px -24px rgba(91,95,219,.5)' },
+      // footer
+      footer: { ...pad, paddingTop:56, paddingBottom:20, background:c.surfaceAlt, borderTop:`1px solid ${c.line}` },
+      footerInner: { maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns: isDesktop?'1fr 2fr':'1fr', gap:40, paddingBottom:40 },
+      footerCols: { display:'grid', gridTemplateColumns:`repeat(${isMobile?2:3},1fr)`, gap:28 },
+      footLink: { color:c.ink, opacity:.55, textDecoration:'none', fontSize:14 },
+      footerBar: { maxWidth:1200, margin:'0 auto', borderTop:`1px solid ${c.line}`, paddingTop:20, display:'flex', flexWrap:'wrap', gap:12, alignItems:'center', justifyContent:'space-between' },
+      // auth
+      authWrap: { minHeight:'100vh', display:'grid', gridTemplateColumns: isDesktop?'1fr 1fr':'1fr' },
+      brandPanel: { background:`linear-gradient(160deg, ${accent}, #4038b8)`, padding:'48px 44px', display:'flex', flexDirection:'column', justifyContent:'space-between', gap:40 },
+      formPane: { display:'flex', alignItems:'center', justifyContent:'center', padding: isMobile?'28px 20px':'40px', background:c.bg },
+      formCard: { width:'100%', maxWidth:420, position:'relative' },
+      backBtn: { ...btnBase, position:'absolute', top:-4, right:0, height:34, padding:'0 12px', borderRadius:10, border:`1px solid ${c.line}`, background:'transparent', color:c.ink, fontSize:13, opacity:.8 },
+      googleBtn: { ...btnBase, width:'100%', height:52, borderRadius:14, border:`1px solid ${c.line}`, background:dark?c.surface:'#fff', color:c.ink, fontSize:15.5, boxShadow:c.shadow },
+      googleG: { width:22, height:22, borderRadius:'50%', background:'conic-gradient(from -45deg,#EA4335 0 25%,#FBBC05 0 50%,#34A853 0 75%,#4285F4 0)', color:'#fff', display:'inline-flex', alignItems:'center', justifyContent:'center', fontWeight:800, fontSize:12, WebkitTextStroke:'0' },
+      divider: { display:'flex', alignItems:'center', gap:14, margin:'22px 0' },
+      dividerLine: { flex:1, height:1, background:c.line },
+      label: { display:'block', fontSize:13.5, fontWeight:700, marginBottom:7, opacity:.85 },
+      labelInline: { fontSize:13.5, fontWeight:700, opacity:.85 },
+      input: inputStyle,
+      pwWrap: { position:'relative' },
+      pwInput: { ...inputStyle, paddingRight:64 },
+      pwToggle: { position:'absolute', right:8, top:8, height:34, padding:'0 10px', borderRadius:9, border:'none', background:'transparent', color:accent, fontFamily:'inherit', fontWeight:700, fontSize:12.5, cursor:'pointer' },
+      remember: { width:22, height:22, borderRadius:7, flexShrink:0, border: `2px solid ${c.line}`, background:'transparent', display:'flex', alignItems:'center', justifyContent:'center' },
+      submitBtn: { ...btnBase, width:'100%', height:54, borderRadius:14, border:'none', background:accent, color:'#fff', fontSize:16, marginTop:24, boxShadow:'0 10px 26px -8px rgba(91,95,219,.55)' },
+    };
+    const checkFill = (on) => ({ ...ui.remember, border: on?'none':ui.remember.border, background: on?accent:'transparent' });
+    ui.remBox = checkFill(this.state.remember);
+    ui.agreeBox = checkFill(this.state.agree);
+
+    // ---- data ----
+    const tint = (h) => h + (dark?'26':'1F');
+    const features = [
+      { name:'AI Study Planner', desc:'Auto-builds a daily plan around your exams and free time.', color:'#5B5FDB', d:['M8 3v3M16 3v3','M4 8h16','M4 6h16v14H4z','M9 14l2 2 4-4'] },
+      { name:'Previous Papers', desc:'Board-wise past papers, sorted and searchable.', color:'#E5533C', d:['M8 3h6l4 4v12H8z','M14 3v4h4','M5 7v14h9'] },
+      { name:'Notes Library', desc:'All your notes, organized by subject and chapter.', color:'#2FB57C', d:['M5 4h11a2 2 0 0 1 2 2v14l-3-2-3 2V4','M5 4v16'] },
+      { name:'Daily Tasks', desc:'A focused checklist that resets every morning.', color:'#8B5CF6', d:['M9 11l3 3L22 4','M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'] },
+      { name:'Exam Countdown', desc:'Live timers keep every deadline in view.', color:'#E8A13A', d:['M12 8v4l3 2','M4 12a8 8 0 1 0 16 0 8 8 0 0 0-16 0'] },
+      { name:'Bookmarks', desc:'Save anything and find it again instantly.', color:'#5B5FDB', d:['M7 4h10v16l-5-4-5 4z'] },
+      { name:'AI Notes Summary', desc:'Turn long notes into crisp revision cards.', color:'#E5533C', d:['M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z'] },
+      { name:'Community Notes', desc:'Learn from top notes shared by other students.', color:'#2FB57C', d:['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2','M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8','M22 21v-2a4 4 0 0 0-3-3.9','M16 3.1A4 4 0 0 1 16 11'] },
+      { name:'Flashcards', desc:'Spaced-repetition decks that beat cramming.', color:'#8B5CF6', d:['M12 3 3 8l9 5 9-5-9-5z','M3 13l9 5 9-5'] },
+    ].map(f => ({ ...f, tint:tint(f.color), iconEl: this.svg(f.d) }));
+
+    const whys = [
+      { t:'One workspace, zero clutter', d:'Everything lives together — no more app-switching mid-study.' },
+      { t:'AI that does the busywork', d:'Summaries, plans and flashcards generated in seconds.' },
+      { t:'Built for real exams', d:'Board-aligned content for CBSE, ICSE, PSEB and state boards.' },
+      { t:'Works on any device', d:'A true mobile-first PWA — install it and study offline.' },
+    ];
+    const steps = [
+      { n:'1', tag:'30 sec', t:'Create account', d:'Sign up with email or Google in one tap.' },
+      { n:'2', tag:'Board & class', t:'Choose your syllabus', d:'Pick your board and class to tailor everything.' },
+      { n:'3', tag:'Instant', t:'Access notes', d:'Your library and past papers load, ready to go.' },
+      { n:'4', tag:'Go', t:'Study with AI', d:'Plan, summarize and revise — smarter every day.' },
+    ];
+    const stars = '★★★★★';
+    const testimonials = [
+      { quote:'StudyOS replaced Notion, Drive and three other apps. My prep finally feels calm.', name:'Aisha Rahman', role:'Class 12 · CBSE', initial:'AR', color:'#E5533C', stars },
+      { quote:'The AI summaries save me an hour every night. Flashcards are shockingly good.', name:'Rohan Mehta', role:'Class 11 · ICSE', initial:'RM', color:'#5B5FDB', stars },
+      { quote:'Past papers in one place with countdowns kept me on track for boards.', name:'Simran Kaur', role:'Class 10 · PSEB', initial:'SK', color:'#2FB57C', stars },
+    ];
+    const faqData = [
+      { q:'Is StudyOS free to use?', a:'Yes — the core workspace is free forever. Premium AI features are available on an optional plan.' },
+      { q:'Which boards do you support?', a:'CBSE, ICSE, PSEB and major state boards, with more added regularly.' },
+      { q:'Does it work offline?', a:'StudyOS is a PWA. Downloaded notes and bookmarked content stay available with poor connectivity.' },
+      { q:'Can I sign in with Google?', a:'Absolutely. One-tap Google sign-in works for new and returning students.' },
+      { q:'Is my data private?', a:'Your notes are yours. We use industry-standard encryption and never sell your data.' },
+    ];
+    const faqs = faqData.map((f,i) => ({ ...f, open: this.state.faq===i, toggle:()=>this.toggleFaq(i),
+      wrapStyle: { background:c.surface, border:`1px solid ${c.line}`, borderRadius:16, padding:'18px 20px' },
+      iconStyle: { width:28, height:28, borderRadius:8, background: this.state.faq===i?accent:tint(accent), color: this.state.faq===i?'#fff':accent, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transform: this.state.faq===i?'rotate(45deg)':'none', transition:'transform .2s' } }));
+
+    const footerCols = [
+      { h:'Product', items:['Features','Pricing','Changelog','Download'] },
+      { h:'Company', items:['About','Blog','Careers','Contact'] },
+      { h:'Resources', items:['Help center','Community','Privacy','Terms'] },
+    ];
+    const regPerks = ['Unlimited notes & bookmarks','AI summaries and flashcards','Past papers for your board'];
+
+    // password strength
+    const pw = this.state.pw;
+    let score = 0;
+    if(pw.length>=8) score++;
+    if(/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if(/\d/.test(pw)) score++;
+    if(/[^A-Za-z0-9]/.test(pw)) score++;
+    if(pw.length===0) score = 0;
+    const strengthColors = ['#EAE8E2','#E5533C','#E8A13A','#5B5FDB','#2FB57C'];
+    const strengthLabels = ['','Weak password','Fair — add more variety','Good password','Strong password'];
+    const pwColor = pw.length? strengthColors[score] : 'transparent';
+    const pwBars = [0,1,2,3].map(i => ({ style: { flex:1, height:5, borderRadius:99, background: (pw.length && i<score)? strengthColors[score] : c.line } }));
+
+    return {
+      rootRef: this.rootRef, ui, c, isDesktop,
+      viewLanding: view==='landing', viewLogin: view==='login', viewRegister: view==='register',
+      showBrandPanel: isDesktop,
+      showLoginLink: !isMobile,
+      goLanding:this.goLanding, goLogin:this.goLogin, goRegister:this.goRegister,
+      toggleTheme:this.toggleTheme, themeIcon: dark?'☀':'☾',
+      togglePw:this.togglePw, pwType: this.state.showPw?'text':'password', pwToggleLabel: this.state.showPw?'Hide':'Show',
+      toggleRemember:this.toggleRemember, remember:this.state.remember,
+      toggleAgree:this.toggleAgree, agree:this.state.agree,
+      setPw:this.setPw, pwValue:pw, pwBars, pwColor, pwLabel: strengthLabels[pw.length?score:0],
+      features, whys, steps, testimonials, faqs, footerCols, regPerks,
+      ctaSize: isMobile?'28px':'40px',
+    };
+  }
+}
+</script>
+</body>
+</html>

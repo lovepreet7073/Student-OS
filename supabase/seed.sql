@@ -1,0 +1,2 @@
+-- Seed data for local development. Runs after `supabase db reset`.
+-- Add feature-scoped seeds as modules ship.
