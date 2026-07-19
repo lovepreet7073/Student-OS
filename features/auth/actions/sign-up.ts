@@ -22,15 +22,19 @@ export async function signUp(
       fieldErrors: parsed.error.flatten().fieldErrors,
     });
   }
+  const values = parsed.data;
 
   const callbackUrl = new URL("/auth/callback", publicEnv.NEXT_PUBLIC_SITE_URL);
 
   const supabase = await getSupabaseServer();
   const { data, error } = await supabase.auth.signUp({
-    email: parsed.data.email,
-    password: parsed.data.password,
+    email: values.email,
+    password: values.password,
     options: {
-      data: { display_name: parsed.data.displayName },
+      data: {
+        display_name: values.displayName,
+        role: values.role,
+      },
       emailRedirectTo: callbackUrl.toString(),
     },
   });
@@ -55,11 +59,9 @@ export async function signUp(
 
   // Confirmation required → session is null, user must click email link.
   if (!data.session) {
-    return ok({ needsVerification: true, email: parsed.data.email });
+    return ok({ needsVerification: true, email: values.email });
   }
 
   revalidatePath("/", "layout");
   redirect("/app/dashboard");
-
-  return ok({ needsVerification: false, email: parsed.data.email });
 }

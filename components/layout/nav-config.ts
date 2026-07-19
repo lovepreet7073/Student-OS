@@ -1,26 +1,33 @@
 import type { LucideIcon } from "lucide-react";
-import { BarChart3, BookText, Home, Layers, UserCircle2 } from "lucide-react";
+import { BookText, Home, LayoutGrid, Users, UserCircle2 } from "lucide-react";
 
 /**
  * The five destinations of the app shell. Order is the tab order in the
- * mobile bottom nav AND the desktop sidebar.
+ * mobile bottom nav AND the desktop sidebar. Keep the list ≤ 5 for mobile
+ * ergonomics.
  *
- * Adding a new destination: append it here. Both nav renderings pick it up
- * automatically. Keep the list ≤ 5 items for mobile ergonomics.
+ * Dashboard + Workspace are peer top-level destinations. Dashboard is the
+ * "today" view (greeting, continue, plan, week). Workspace is the "storage"
+ * view (all content categories + recent activity). Study/Quizzes is
+ * discoverable via a tile inside Workspace.
+ *
+ * `labelKey` is a key inside the `nav.*` namespace of the i18n dictionary —
+ * the renderer resolves it via `useTranslations('nav')`. Callers must never
+ * inline English strings here.
  */
 export interface NavItem {
   key: string;
   href: string;
-  label: string;
+  labelKey: "dashboard" | "workspace" | "notes" | "community" | "profile";
   icon: LucideIcon;
 }
 
 export const APP_NAV_ITEMS: readonly NavItem[] = [
-  { key: "home",     href: "/app/dashboard", label: "Home",     icon: Home },
-  { key: "notes",    href: "/app/notes",     label: "Notes",    icon: BookText },
-  { key: "study",    href: "/app/study",     label: "Study",    icon: Layers },
-  { key: "progress", href: "/app/progress",  label: "Progress", icon: BarChart3 },
-  { key: "profile",  href: "/app/profile",   label: "Profile",  icon: UserCircle2 },
+  { key: "dashboard", href: "/app/dashboard", labelKey: "dashboard", icon: Home },
+  { key: "workspace", href: "/app/workspace", labelKey: "workspace", icon: LayoutGrid },
+  { key: "notes",     href: "/app/notes",     labelKey: "notes",     icon: BookText },
+  { key: "community", href: "/app/community", labelKey: "community", icon: Users },
+  { key: "profile",   href: "/app/profile",   labelKey: "profile",   icon: UserCircle2 },
 ] as const;
 
 /**

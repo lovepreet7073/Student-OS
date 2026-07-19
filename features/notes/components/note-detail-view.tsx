@@ -2,11 +2,13 @@ import Link from "next/link";
 import { ArrowLeft, Pencil } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ShareToCommunityButton } from "@/features/community/components/share-to-community-button";
 import { formatRelativeTime } from "@/lib/format-date";
 
 import type { NoteListItem } from "../types";
 import { BookmarkToggleButton } from "./bookmark-toggle-button";
 import { DeleteNoteDialog } from "./delete-note-dialog";
+import { ShareNoteDialog } from "./share-note-dialog";
 
 interface NoteDetailViewProps {
   note: NoteListItem;
@@ -37,6 +39,12 @@ export function NoteDetailView({ note }: NoteDetailViewProps) {
               <Pencil className="h-[18px] w-[18px]" strokeWidth={2} aria-hidden />
             </Link>
           </Button>
+          <ShareNoteDialog
+            noteId={note.id}
+            initialShareToken={note.shareToken}
+            initialVisibility={note.visibility}
+          />
+          <ShareToCommunityButton noteId={note.id} />
           <DeleteNoteDialog noteId={note.id} noteTitle={note.title} />
         </div>
       </header>

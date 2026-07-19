@@ -22,9 +22,31 @@ export const getReferenceData = cache(async (): Promise<Result<ReferenceData, Ac
   ]);
 
   if (boardsRes.error || mediumsRes.error || classesRes.error) {
+    console.error("[getReferenceData] Supabase error", {
+      boards: boardsRes.error,
+      mediums: mediumsRes.error,
+      classes: classesRes.error,
+    });
     return err({
       code: "DB",
       message: "Couldn't load academic options. Please refresh.",
+    });
+  }
+
+  if (
+    (boardsRes.data ?? []).length === 0 ||
+    (mediumsRes.data ?? []).length === 0 ||
+    (classesRes.data ?? []).length === 0
+  ) {
+    console.error("[getReferenceData] Empty reference tables — did migrations run?", {
+      boards: boardsRes.data?.length,
+      mediums: mediumsRes.data?.length,
+      classes: classesRes.data?.length,
+    });
+    return err({
+      code: "DB",
+      message:
+        "The database isn't set up yet — reference data (boards/mediums/classes) is empty. Apply the migrations and try again.",
     });
   }
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 import { useAcademicProfile } from "@/features/academic-identity/hooks/use-academic-profile";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,8 @@ export function DesktopSidebar() {
   const pathname = usePathname();
   const activeKey = activeNavKey(pathname);
   const profile = useAcademicProfile();
+  const tNav = useTranslations("nav");
+  const tNotes = useTranslations("notes");
 
   return (
     <aside className="sticky top-0 hidden h-svh flex-col justify-between border-r border-border bg-card px-4 py-6 lg:flex">
@@ -24,7 +27,7 @@ export function DesktopSidebar() {
           <Logo variant="full" size="md" href="/app/dashboard" />
         </div>
 
-        <nav className="flex flex-col gap-1" aria-label="Primary">
+        <nav className="flex flex-col gap-1" aria-label={tNav("home")}>
           {APP_NAV_ITEMS.map((item) => {
             const active = item.key === activeKey;
             return (
@@ -41,7 +44,7 @@ export function DesktopSidebar() {
                 )}
               >
                 <item.icon className="h-[22px] w-[22px]" strokeWidth={1.8} aria-hidden />
-                <span>{item.label}</span>
+                <span>{tNav(item.labelKey)}</span>
               </Link>
             );
           })}
@@ -54,7 +57,7 @@ export function DesktopSidebar() {
           className="flex h-[46px] items-center justify-center gap-2 rounded-md bg-primary text-[15px] font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
           <Plus className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
-          New note
+          {tNotes("newNote")}
         </Link>
 
         <div className="flex items-center justify-between gap-2">

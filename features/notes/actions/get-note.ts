@@ -2,6 +2,7 @@
 
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { err, ok, type ActionError, type Result } from "@/lib/result";
+import { logActivity } from "@/features/workspace/actions/log-activity";
 
 import type { NoteListItem } from "../types";
 
@@ -15,7 +16,8 @@ export async function getNote(
     .select(
       `
         id, user_id, board_id, class_id, medium_id, subject_id,
-        title, content, is_bookmarked, created_at, updated_at,
+        title, content, is_bookmarked, visibility, share_token,
+        created_at, updated_at,
         subject:subjects ( name, slug )
       `,
     )
@@ -31,6 +33,17 @@ export async function getNote(
 
   const subject = Array.isArray(data.subject) ? data.subject[0] : data.subject;
 
+  // Fire-and-forget: swallows failure and dedupes to one open per day.
+  await logActivity({
+    entityType: "note",
+    entityId: data.id,
+    action: "opened",
+    title: data.title,
+  });
+
+  const rawVisibility = (data as { visibility?: string | null }).visibility;
+  const rawToken = (data as { share_token?: string | null }).share_token;
+
   return ok({
     id: data.id,
     userId: data.user_id,
@@ -41,6 +54,8 @@ export async function getNote(
     title: data.title,
     content: data.content,
     isBookmarked: data.is_bookmarked,
+    visibility: rawVisibility === "link" ? "link" : "private",
+    shareToken: rawToken ?? null,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
     subjectName: subject?.name ?? "—",

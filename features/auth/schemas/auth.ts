@@ -23,12 +23,36 @@ export const signInSchema = z.object({
 });
 export type SignInInput = z.infer<typeof signInSchema>;
 
+export const roleSchema = z.enum(["student", "teacher"]);
+
 export const signUpSchema = z.object({
+  role: roleSchema,
   displayName: displayNameSchema,
   email: emailSchema,
   password: passwordSchema,
 });
 export type SignUpInput = z.infer<typeof signUpSchema>;
+
+/** Six-digit numeric code sent via email. */
+export const otpTokenSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/, "Enter the 6-digit code");
+
+export const sendOtpSchema = z.object({
+  email: emailSchema,
+  /** Signup captures role + display name up-front so we can attach them to the
+   *  auth user on first send. Login-only callers omit both. */
+  role: roleSchema.optional(),
+  displayName: displayNameSchema.optional(),
+});
+export type SendOtpInput = z.infer<typeof sendOtpSchema>;
+
+export const verifyOtpSchema = z.object({
+  email: emailSchema,
+  token: otpTokenSchema,
+});
+export type VerifyOtpInput = z.infer<typeof verifyOtpSchema>;
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,

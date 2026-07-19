@@ -5,24 +5,17 @@ import { Fab } from "@/features/dashboard/components/fab";
 import { GreetingHeader } from "@/features/dashboard/components/greeting-header";
 import { SubjectsGrid } from "@/features/dashboard/components/subjects-grid";
 import { TodaysPlan } from "@/features/dashboard/components/todays-plan";
+import { TodaysSessions } from "@/features/dashboard/components/todays-sessions";
 import { WeekStats } from "@/features/dashboard/components/week-stats";
 import { getMyProfile } from "@/features/academic-identity/actions/get-my-profile";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 /**
- * Home screen — real data where it exists, honest zeros where it doesn't.
- *
- * Real:
- *   - GreetingHeader (profile.displayName)
- *   - TodaysPlan (fetches from tasks table, feature-owned data fetching)
- *   - SubjectsGrid (profile.subjects)
- *
- * Placeholder until backing features ship:
- *   - streakDays          → will read study-session tracker
- *   - ContinueHero        → will read last-opened note (Module 4 landed but
- *                            no "last opened" tracking yet — pending)
- *   - WeekStats           → will read analytics module
+ * Home dashboard — real data where it exists, honest zeros where it doesn't.
+ * Dashboard and Workspace are peer top-level destinations (ADR-0019 revised):
+ *   - Dashboard = today's summary + continue-where-you-left-off
+ *   - Workspace = the storage/library view of everything
  */
 export default async function DashboardPage() {
   const profile = await getMyProfile();
@@ -47,6 +40,8 @@ export default async function DashboardPage() {
           chapterIndex={1}
           progressPct={0}
         />
+
+        <TodaysSessions />
 
         <TodaysPlan />
 

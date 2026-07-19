@@ -2,6 +2,9 @@ import { z } from "zod";
 
 const uuidSchema = z.string().uuid("Invalid identifier");
 
+export const userRoleSchema = z.enum(["student", "teacher"]);
+export type UserRoleInput = z.infer<typeof userRoleSchema>;
+
 export const savePreferencesSchema = z.object({
   boardId: uuidSchema,
   mediumId: uuidSchema,
@@ -15,6 +18,7 @@ export const savePreferencesSchema = z.object({
     .trim()
     .min(2, "Choose a language")
     .max(8, "Language code is too long"),
+  role: userRoleSchema.optional(),
 });
 
 export type SavePreferencesInput = z.infer<typeof savePreferencesSchema>;

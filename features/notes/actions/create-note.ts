@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getAcademicScope } from "@/lib/academic/scope";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { err, ok, type ActionError, type Result } from "@/lib/result";
+import { logActivity } from "@/features/workspace/actions/log-activity";
 
 import { createNoteSchema, type CreateNoteInput } from "../schemas/note";
 
@@ -54,7 +55,15 @@ export async function createNote(
     return err({ code: "DB", message: "Couldn't save your note. Try again." });
   }
 
+  await logActivity({
+    entityType: "note",
+    entityId: data.id,
+    action: "created",
+    title: parsed.data.title,
+  });
+
   revalidatePath("/app/notes");
+  revalidatePath("/app/workspace");
 
   if (options?.redirectTo) {
     redirect(options.redirectTo);

@@ -83,6 +83,92 @@ direct from a feature. Prompts live as pure template functions in
 `lib/gemini/prompts/{feature}.ts`. Gemini response schemas live in
 `features/{feature}/schemas/gemini.ts` with `superRefine` for cross-field rules.
 
+## AI Study Planner
+
+See `study-planner.md` — second AI feature. Same `generateStructured` pattern
+scaled to bigger outputs (up to 60 days × ~4 sessions). Day-relative offsets in
+the prompt (day 0, 1, 2…) instead of calendar dates — server converts offsets
+to real dates on persist. Partial unique index enforces "one active plan per
+user". Dashboard widget `<TodaysSessions>` renders null when no active plan.
+
+## My Study Space (Storage patterns)
+
+See `study-space.md` — first Storage-based feature. Establishes the
+**direct-to-Storage upload pattern**: `beginUpload` server action reserves a
+`{user_id}/{file_id}.{ext}` path, client uploads directly via
+`supabase.storage.upload()` (RLS on `storage.objects` guarantees isolation),
+then `completeUpload` inserts the metadata row. Bandwidth never crosses our
+server. Every future upload feature (Test Evaluation, avatars, attachments)
+must reuse this three-step flow — never proxy file bytes through our server.
+
+## AI Test Evaluation (Gemini Vision + async AI)
+
+See `test-evaluations.md` — third AI feature. **Extends
+`generateStructured()`** to accept `images: { mimeType, data }[]` (base64
+inline) — same helper handles text AND Vision. Establishes the
+**`begin → upload → submit`** pattern for multi-file async AI jobs. AI's
+arithmetic (score, percentage, grade) is always **recomputed server-side** —
+trust concepts, verify math. Status lifecycle
+`pending → evaluating → completed | failed` with `router.refresh()` polling.
+
+## Auth v2 + Teacher role
+
+See `auth-v2.md` — the marketing landing + split-screen auth built from
+`StudyOS_Auth_v2_Deck.pptx`. Introduces `user_role: 'student' | 'teacher'`
+on `user_preferences` (ADR-0014). Signup audience picker → `user_metadata.role`
+→ `save-my-profile` → `user_preferences.user_role` → `profile.role`. Landing
+audience toggle changes copy, not layout. `AuthShell` accepts a `marketingPanel`
+slot — brand panel LEFT, form RIGHT on `lg+`.
+
+## My Workspace
+
+See `workspace.md` — the primary destination in `/app/*`, mounted at
+`/app/workspace` (ADR-0019). Unifies every existing content type into one hub
+with counts, quick actions, Recently opened / Recently uploaded feeds backed
+by a new `activity_events` table, plus a global search entry point.
+Callers append `await logActivity({...})` after successful reads/writes;
+failures are swallowed by design.
+
+Module 16 (share-via-link, ADR-0020): notes have `visibility` + `share_token`;
+`/s/n/[token]` renders a read-only public view. Module 17 (global search,
+ADR-0021): `/app/search` runs four parallel ILIKE queries across notes,
+files, tasks, community_notes with grouped results.
+
+## Auth: OTP primary
+
+Email OTP is the default sign-in / sign-up path (ADR-0018). `sendEmailOtp` →
+6-digit code → `verifyEmailOtp` → redirect. Google OAuth stays above the
+divider. Password field only appears when the user taps "Use password
+instead" — kept as a fallback for existing users, will be removed once the
+password base is empty. OTP schemas + actions live in
+`features/auth/actions/{send,verify}-email-otp.ts`; the two-step UX is in
+`features/auth/components/otp-flow.tsx` with a mobile-first `<OtpInput/>`
+that supports `autoComplete="one-time-code"` for OS-level SMS/email autofill.
+
+## Internationalisation
+
+See `i18n.md` — locale resolves from `user_preferences.preferred_language`
+(ADR-0017 — no URL-based routing). Namespace-scoped `useTranslations()` /
+`getTranslations()` are the ONE pattern. Landing, nav, auth, dashboard header,
+profile, and the top-level list headers for notes + community are fully
+translated in `en` + `pa`. Feature-detail surfaces (tasks, quizzes, planner,
+test evals, moderation, dialogs) still hold English strings — sweep them in
+Module 13.5.
+
+## Community Notes
+
+See `community.md` — the first social feature. Students share private notes
+to `community_notes` (a snapshot table — ADR-0015). Teachers moderate the
+pending queue. Peers see approved notes filtered by their `(board × class ×
+medium)` scope. `is_teacher()` DB helper gates moderation RLS. `Progress`
+nav slot swapped for `Community` — the 5-nav rule holds.
+
+Community v2 (Module 12): **report triage** for teachers with soft-dismiss
+audit trail (ADR-0016), **contributor profile** pages
+(`/app/community/authors/[id]`) showing an author's approved shares scoped to
+the *viewer's* board × class × medium, and a **My shared notes** section on
+`/app/profile` with per-status buckets + unshare action.
+
 ## Design System
 
 See `ui-guidelines.md`.

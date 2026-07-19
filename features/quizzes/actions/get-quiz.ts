@@ -2,6 +2,7 @@
 
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { err, ok, type ActionError, type Result } from "@/lib/result";
+import { logActivity } from "@/features/workspace/actions/log-activity";
 
 import type { QuizWithQuestions, QuizQuestionType } from "../types";
 
@@ -44,6 +45,13 @@ export async function getQuiz(
   const subject = Array.isArray(quizRes.data.subject)
     ? quizRes.data.subject[0]
     : quizRes.data.subject;
+
+  await logActivity({
+    entityType: "quiz",
+    entityId: quizRes.data.id,
+    action: "opened",
+    title: quizRes.data.topic,
+  });
 
   const answersByQuestionId = Object.fromEntries(
     (answersRes.data ?? []).map((a) => [

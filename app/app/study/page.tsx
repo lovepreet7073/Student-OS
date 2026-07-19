@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { ArrowRight, ClipboardCheck, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/error-state";
@@ -48,6 +48,31 @@ export default async function StudyPage() {
           <QuizHistoryList quizzes={result.data} />
         )}
       </section>
+
+      <Link
+        href="/app/tests"
+        className="mt-8 flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        <span
+          aria-hidden
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-brand-accent/15 text-brand-accent"
+        >
+          <ClipboardCheck className="h-5 w-5" strokeWidth={1.8} />
+        </span>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="text-[15px] font-bold tracking-tight">
+            Grade a paper test with AI
+          </div>
+          <div className="text-[13px] text-muted-foreground">
+            Snap your handwritten answers and get marks + feedback.
+          </div>
+        </div>
+        <ArrowRight
+          className="h-[18px] w-[18px] flex-shrink-0 text-muted-foreground/70"
+          strokeWidth={2}
+          aria-hidden
+        />
+      </Link>
     </div>
   );
 }

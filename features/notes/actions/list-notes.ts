@@ -89,6 +89,8 @@ export async function listNotes(
       title: row.title,
       content: row.content,
       isBookmarked: row.is_bookmarked,
+      visibility: "private" as const,
+      shareToken: null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
       subjectName: subject?.name ?? "—",

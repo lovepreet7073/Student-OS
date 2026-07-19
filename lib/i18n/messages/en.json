@@ -4,8 +4,245 @@
     "back": "Back",
     "save": "Save",
     "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
     "loading": "Loading…",
-    "retry": "Try again"
+    "retry": "Try again",
+    "close": "Close",
+    "signOut": "Sign out",
+    "logIn": "Log in",
+    "signUp": "Sign up",
+    "getStarted": "Get started",
+    "signIn": "Sign in"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "unauthorized": "Please sign in.",
+    "notFound": "Not found."
+  },
+  "nav": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "workspace": "Workspace",
+    "notes": "Notes",
+    "study": "Study",
+    "community": "Community",
+    "profile": "Profile"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search notes, files, tasks…",
+    "resultsLabel": "Results",
+    "untitled": "Untitled",
+    "empty": {
+      "title": "Search your workspace",
+      "hint": "Notes, files, tasks and community posts on your board."
+    },
+    "noResults": {
+      "title": "Nothing found for \"{q}\"",
+      "hint": "Try a shorter or different word."
+    },
+    "groups": {
+      "notes": "Notes",
+      "files": "Files",
+      "tasks": "Tasks",
+      "community": "Community"
+    }
+  },
+  "workspace": {
+    "title": "My Workspace",
+    "greeting": "Hi, {name}",
+    "quickActionsLabel": "Quick actions",
+    "categoriesLabel": "Your stuff",
+    "recentOpenedLabel": "Recently opened",
+    "recentUploadedLabel": "Recently uploaded",
+    "errors": {
+      "overview": "Couldn't load your workspace",
+      "activity": "Couldn't load recent activity"
+    },
+    "quickActions": {
+      "newNote": { "title": "New note", "hint": "Start writing" },
+      "upload":  { "title": "Upload file", "hint": "PDFs, images" },
+      "newQuiz": { "title": "New quiz", "hint": "AI-generated" },
+      "gradeTest": { "title": "Grade a test", "hint": "Paper test AI" }
+    },
+    "categories": {
+      "notes": "Notes",
+      "files": "Files",
+      "tasks": "Tasks",
+      "bookmarks": "Bookmarks",
+      "quizzes": "Quizzes",
+      "plan": "Study plan",
+      "tests": "Test evals",
+      "community": "Community",
+      "planActive": "Active",
+      "planNone": "None",
+      "sharedNotes": "shared",
+      "plan_singular": "active plan",
+      "plan_none": "no active plan"
+    },
+    "activity": {
+      "openedEmpty": {
+        "title": "Nothing opened yet",
+        "description": "Notes, files, quizzes and plans you open will show up here."
+      },
+      "uploadedEmpty": {
+        "title": "Nothing uploaded yet",
+        "description": "Files and test papers you upload will show up here."
+      },
+      "type": {
+        "note": "Note",
+        "file": "File",
+        "task": "Task",
+        "quiz": "Quiz",
+        "study_plan": "Study plan",
+        "test_evaluation": "Test evaluation",
+        "community_note": "Community note"
+      }
+    }
+  },
+  "landing": {
+    "signIn": "Log in",
+    "getStarted": "Get started",
+    "eyebrowAi": "AI-powered study platform",
+    "footer": "Calm, cohesive, ready to build.",
+    "audience": {
+      "student": "For students",
+      "teacher": "For teachers"
+    },
+    "hero": {
+      "student": {
+        "heading": "Your whole study life, in one place.",
+        "sub": "Plan smarter, learn faster, and stay calm before every exam — with AI that studies alongside you.",
+        "cta": "Start studying free"
+      },
+      "teacher": {
+        "heading": "Your whole teaching life, in one place.",
+        "sub": "Plan lessons, grade paper tests, and track every student — with AI that does the paperwork for you.",
+        "cta": "Start teaching free"
+      }
+    },
+    "sectionOverline": "On the landing page",
+    "section": {
+      "student": {
+        "heading": "One tidy home for everything.",
+        "sub": "Every tool you need to prep, revise, and cross the finish line — designed to feel calm."
+      },
+      "teacher": {
+        "heading": "One tidy staff room for everything.",
+        "sub": "Every tool you need to plan, grade, and coach — designed to give you your evenings back."
+      }
+    }
+  },
+  "auth": {
+    "shellHome": "Home",
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "forgot": "Forgot?",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "Enter your password",
+    "namePlaceholder": "Your name",
+    "orUseEmail": "or use email",
+    "orContinueEmail": "or continue with email",
+    "orSignUpEmail": "or sign up with email",
+    "passwordHelper": "Use at least 8 characters. Mix letters, numbers, and symbols for stronger security.",
+    "passwordSignUpPlaceholder": "At least 8 characters",
+    "usePasswordInstead": "Use password instead",
+    "useCodeInstead": "Use a code instead",
+    "otp": {
+      "emailHelper": "We'll email you a 6-digit code. No link to click.",
+      "emailEmpty": "Enter your email address",
+      "codeLabel": "Enter the 6-digit code",
+      "codeHelper": "Codes expire in 5 minutes. Check spam if you don't see it.",
+      "codeEmpty": "Enter the 6-digit code",
+      "codeWrong": "Wrong code",
+      "codeExpired": "That code has expired. Ask for a new one.",
+      "codeInvalid": "That code isn't right. Double-check and try again.",
+      "resendWait": "Resend code in {seconds}s",
+      "resendNow": "Send a new code",
+      "codeSent": "Code sent to {email}",
+      "newSent": "New code sent",
+      "rateLimit": "You're going too fast. Wait a minute and try again.",
+      "sendError": "Couldn't send the code. Check the email address and try again.",
+      "verifyError": "Couldn't verify the code. Try again.",
+      "sendLoginCta": "Send login code",
+      "sendSignupCta": "Send signup code",
+      "verifyLoginCta": "Log in",
+      "verifySignupCta": "Create account",
+      "cellLabel": "Digit {n}",
+      "enterNameFirst": "Enter your name above, then we'll send the code."
+    },
+    "login": {
+      "eyebrow": "Log in",
+      "title": "Welcome back",
+      "description": "Log in to pick up where you left off.",
+      "cta": "Log in",
+      "noAccount": "Don't have an account?",
+      "createOne": "Create one"
+    },
+    "signup": {
+      "eyebrow": "Sign up",
+      "title": "Create your account",
+      "description": "First — who's signing up?",
+      "cta": "Create account",
+      "hasAccount": "Already have an account?",
+      "termsPre": "By continuing you agree to our",
+      "terms": "Terms",
+      "and": "&",
+      "privacy": "Privacy",
+      "student": "I'm a student",
+      "studentHelper": "Study, plan, and revise with AI",
+      "teacher": "I'm a teacher",
+      "teacherHelper": "Plan lessons and grade papers with AI",
+      "yourName": "Your name",
+      "yourNamePlaceholder": "Your name",
+      "nameEmpty": "Enter your name",
+      "nameTooLong": "Name is too long"
+    }
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "roleStudent": "Student",
+    "roleTeacher": "Teacher",
+    "appearance": "Appearance",
+    "appearanceHint": "Follows your device by default.",
+    "editProfile": "Edit",
+    "settings": {
+      "account": "Account",
+      "notifications": "Notifications",
+      "downloads": "Offline downloads",
+      "help": "Help & support",
+      "signOut": "Sign out"
+    },
+    "versionLine": "StudyOS · v0.1 · Works offline"
+  },
+  "notes": {
+    "title": "Notes",
+    "description": "Your subject notes, scoped to your syllabus.",
+    "newNote": "New note",
+    "empty": {
+      "title": "No notes here yet",
+      "description": "Start jotting your first note — organised by subject, searchable, and always in sync.",
+      "cta": "Write your first note"
+    }
+  },
+  "community": {
+    "title": "Community",
+    "description": "Notes shared by peers on your board, class and medium.",
+    "moderate": "Moderate",
+    "empty": {
+      "title": "Nothing shared here yet",
+      "description": "When your peers share notes, they'll show up here once a teacher approves them. Want to be the first?",
+      "cta": "Share one of yours"
+    }
   },
   "onboarding": {
     "title": "Set up your studies",

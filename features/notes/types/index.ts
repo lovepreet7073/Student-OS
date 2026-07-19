@@ -1,3 +1,5 @@
+export type NoteVisibility = "private" | "link";
+
 export type Note = {
   id: string;
   userId: string;
@@ -8,6 +10,8 @@ export type Note = {
   title: string;
   content: string;
   isBookmarked: boolean;
+  visibility: NoteVisibility;
+  shareToken: string | null;
   createdAt: string;
   updatedAt: string;
 };

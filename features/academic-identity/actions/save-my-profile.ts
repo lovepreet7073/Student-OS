@@ -40,7 +40,13 @@ export async function saveMyProfile(
     return err({ code: "UNAUTHORIZED", message: "Please sign in again." });
   }
 
-  const { boardId, mediumId, classId, subjectIds, preferredLanguage } = parsed.data;
+  const { boardId, mediumId, classId, subjectIds, preferredLanguage, role } = parsed.data;
+
+  // Fall back to the role captured at signup (auth.users.user_metadata.role)
+  // so OAuth users who never saw the audience picker still get the right role.
+  const metadataRole = (user.user_metadata as { role?: string } | null)?.role;
+  const resolvedRole =
+    role ?? (metadataRole === "teacher" || metadataRole === "student" ? metadataRole : undefined);
 
   const upsertResult = await supabase
     .from("user_preferences")
@@ -51,6 +57,7 @@ export async function saveMyProfile(
         medium_id: mediumId,
         class_id: classId,
         preferred_language: preferredLanguage,
+        ...(resolvedRole ? { user_role: resolvedRole } : {}),
       },
       { onConflict: "user_id" },
     )

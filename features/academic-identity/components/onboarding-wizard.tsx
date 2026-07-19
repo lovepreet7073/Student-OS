@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { cn } from "@/lib/utils";
 import { saveMyProfile } from "../actions/save-my-profile";
 import { getSubjects } from "../actions/get-subjects";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
@@ -182,7 +183,12 @@ export function OnboardingWizard({ boards, mediums, classes }: OnboardingWizardP
 
   // -------- render ------------------------------------------------------
   return (
-    <div className="grid min-h-svh grid-cols-1 bg-background lg:grid-cols-[300px_1fr]">
+    <div
+      className={cn(
+        "grid min-h-svh bg-background",
+        isDone ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-[300px_1fr]",
+      )}
+    >
       {!isDone ? <WizardRail steps={railSteps} /> : null}
 
       <main className="flex h-svh flex-col lg:h-screen">
@@ -220,6 +226,9 @@ export function OnboardingWizard({ boards, mediums, classes }: OnboardingWizardP
                 loading={subjectsLoading}
                 boardShortName={selectedBoard?.shortName ?? ""}
                 className={selectedClass?.name ?? ""}
+                boardId={boardId ?? ""}
+                classId={classId ?? ""}
+                mediumId={mediumId ?? ""}
                 onToggle={(subjectId) =>
                   setState((s) => {
                     const next = new Set(s.subjectIds);
@@ -227,6 +236,14 @@ export function OnboardingWizard({ boards, mediums, classes }: OnboardingWizardP
                     return { ...s, subjectIds: next };
                   })
                 }
+                onCustomAdded={(subject) => {
+                  setSubjects((prev) => [...prev, subject]);
+                  setState((s) => {
+                    const next = new Set(s.subjectIds);
+                    next.add(subject.id);
+                    return { ...s, subjectIds: next };
+                  });
+                }}
               />
             )}
             {step === 5 && (

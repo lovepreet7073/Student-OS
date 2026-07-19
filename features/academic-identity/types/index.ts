@@ -43,6 +43,8 @@ export type ReferenceData = {
   classes: ClassLevel[];
 };
 
+export type UserRole = "student" | "teacher";
+
 /**
  * The user's saved preferences plus their subject selections.
  * Returned by `getMyProfile`. Contains everything needed to filter content.
@@ -51,6 +53,7 @@ export type AcademicProfile = {
   userId: string;
   displayName: string;
   email: string;
+  role: UserRole;
   board: Board;
   medium: Medium;
   classLevel: ClassLevel;
@@ -78,4 +81,5 @@ export type SavableProfile = {
   classId: string;
   subjectIds: string[];
   preferredLanguage: string;
+  role?: UserRole;
 };

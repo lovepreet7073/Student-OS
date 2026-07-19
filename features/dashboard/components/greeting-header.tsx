@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 import { StreakBadge } from "@/components/layout/streak-badge";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserAvatar } from "@/components/layout/user-avatar";
 
 interface GreetingHeaderProps {
@@ -8,15 +10,16 @@ interface GreetingHeaderProps {
   streakDays: number;
 }
 
-function getGreeting(hour: number): string {
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+function greetingKey(hour: number): "morning" | "afternoon" | "evening" {
+  if (hour < 12) return "morning";
+  if (hour < 18) return "afternoon";
+  return "evening";
 }
 
-export function GreetingHeader({ displayName, streakDays }: GreetingHeaderProps) {
+export async function GreetingHeader({ displayName, streakDays }: GreetingHeaderProps) {
+  const t = await getTranslations("dashboard.greeting");
   const hour = new Date().getHours();
-  const greeting = getGreeting(hour);
+  const greeting = t(greetingKey(hour));
   const firstName = displayName.trim().split(/\s+/)[0] ?? displayName;
 
   return (
@@ -30,6 +33,7 @@ export function GreetingHeader({ displayName, streakDays }: GreetingHeaderProps)
         </div>
         <div className="flex items-center gap-2.5">
           <StreakBadge days={streakDays} />
+          <ThemeToggle className="h-10 w-10 lg:hidden" />
           <Link
             href="/app/profile"
             aria-label="Go to profile"

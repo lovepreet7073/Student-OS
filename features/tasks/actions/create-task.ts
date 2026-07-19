@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getAcademicScope } from "@/lib/academic/scope";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { err, ok, type ActionError, type Result } from "@/lib/result";
+import { logActivity } from "@/features/workspace/actions/log-activity";
 
 import { createTaskSchema, type CreateTaskInput } from "../schemas/task";
 
@@ -51,8 +52,16 @@ export async function createTask(
     return err({ code: "DB", message: "Couldn't save your task. Try again." });
   }
 
+  await logActivity({
+    entityType: "task",
+    entityId: data.id,
+    action: "created",
+    title: parsed.data.title,
+  });
+
   revalidatePath("/app/tasks");
   revalidatePath("/app/dashboard");
+  revalidatePath("/app/workspace");
 
   return ok({ id: data.id });
 }

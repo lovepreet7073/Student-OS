@@ -133,9 +133,6 @@ export function NoteForm({ subjects, initial }: NoteFormProps) {
           <Link href={isEditing ? `${REDIRECT_TO}/${initial!.id}` : REDIRECT_TO}>Cancel</Link>
         </Button>
         <Button type="submit" size="lg" fullWidth className="sm:w-auto" loading={isSubmitting}>
-          {isSubmitting ? (
-            <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-          ) : null}
           {isEditing ? "Save changes" : "Create note"}
         </Button>
       </div>

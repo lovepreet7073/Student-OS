@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   Bell,
   ChevronRight,
@@ -10,44 +11,54 @@ import {
   UserCircle2,
 } from "lucide-react";
 
+import { ThemeSelector } from "@/components/layout/theme-selector";
 import { UserAvatar } from "@/components/layout/user-avatar";
 import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/academic-identity/actions/get-my-profile";
 import { signOut } from "@/features/auth/actions/sign-out";
+import { bucketByStatus, listMyShares } from "@/features/community/actions/list-my-shares";
+import { MySharesSection } from "@/features/community/components/my-shares-section";
 
 export const metadata: Metadata = { title: "Profile" };
 
+type SettingsKey = "account" | "notifications" | "downloads" | "help" | "signOut";
+
 interface SettingsRow {
-  key: string;
+  key: SettingsKey;
   href?: string;
   action?: "sign-out";
   icon: typeof Bell;
-  label: string;
   danger?: boolean;
 }
 
 const SETTINGS_ROWS: SettingsRow[] = [
-  { key: "account",       icon: UserCircle2, label: "Account",           href: "#" },
-  { key: "notifications", icon: Bell,        label: "Notifications",     href: "#" },
-  { key: "downloads",     icon: Download,    label: "Offline downloads", href: "#" },
-  { key: "appearance",    icon: Palette,     label: "Appearance",        href: "#" },
-  { key: "help",          icon: HelpCircle,  label: "Help & support",    href: "#" },
-  { key: "signout",       icon: LogOut,      label: "Sign out",          action: "sign-out", danger: true },
+  { key: "account",       icon: UserCircle2, href: "#" },
+  { key: "notifications", icon: Bell,        href: "#" },
+  { key: "downloads",     icon: Download,    href: "#" },
+  { key: "help",          icon: HelpCircle,  href: "#" },
+  { key: "signOut",       icon: LogOut,      action: "sign-out", danger: true },
 ];
 
 export default async function ProfilePage() {
-  const profile = await getMyProfile();
+  const [profile, sharesResult, t] = await Promise.all([
+    getMyProfile(),
+    listMyShares(),
+    getTranslations("profile"),
+  ]);
   if (!profile) return null;
+
+  const shares = sharesResult.ok ? sharesResult.data : [];
+  const shareBuckets = bucketByStatus(shares);
 
   return (
     <div className="mx-auto max-w-[780px] px-5 py-6 sm:px-7 sm:py-8 lg:max-w-[1140px] lg:px-11 lg:py-10">
       <header className="mb-6">
-        <h1 className="text-[26px] font-extrabold tracking-tight sm:text-[30px]">Profile</h1>
+        <h1 className="text-[26px] font-extrabold tracking-tight sm:text-[30px]">{t("title")}</h1>
       </header>
 
       <section
         className="mb-5 flex items-center gap-4 rounded-xl border border-border bg-card p-5"
-        aria-label="Account"
+        aria-label={t("settings.account")}
       >
         <UserAvatar displayName={profile.displayName} size="lg" />
         <div className="min-w-0 flex-1">
@@ -57,33 +68,72 @@ export default async function ProfilePage() {
           <div className="mt-0.5 truncate text-[13.5px] text-muted-foreground/80">
             {profile.email}
           </div>
-          <div className="mt-1.5 text-xs font-semibold text-muted-foreground">
-            {profile.board.shortName} · {profile.medium.name} Medium · Class {profile.classLevel.name}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-wide ${
+                profile.role === "teacher"
+                  ? "bg-brand-accent/15 text-brand-accent"
+                  : "bg-primary/12 text-primary"
+              }`}
+            >
+              {profile.role === "teacher" ? t("roleTeacher") : t("roleStudent")}
+            </span>
+            <span>
+              {profile.board.shortName} · {profile.medium.name} · {profile.classLevel.name}
+            </span>
           </div>
         </div>
         <Button asChild variant="outline" size="sm">
-          <Link href="/onboarding?edit=1">Edit</Link>
+          <Link href="/onboarding?edit=1">{t("editProfile")}</Link>
         </Button>
       </section>
 
+      <section
+        className="mb-5 flex items-center gap-4 rounded-xl border border-border bg-card p-4"
+        aria-label={t("appearance")}
+      >
+        <span
+          aria-hidden
+          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md bg-secondary text-primary"
+        >
+          <Palette className="h-[18px] w-[18px]" strokeWidth={2} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[15px] font-bold">{t("appearance")}</div>
+          <div className="text-[12.5px] text-muted-foreground">{t("appearanceHint")}</div>
+        </div>
+        <ThemeSelector />
+      </section>
+
+      <MySharesSection buckets={shareBuckets} />
+
       <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {SETTINGS_ROWS.map((row, i) =>
-          row.action === "sign-out" ? (
-            <SignOutRow key={row.key} row={row} isFirst={i === 0} />
+        {SETTINGS_ROWS.map((row, i) => {
+          const label = t(`settings.${row.key}`);
+          return row.action === "sign-out" ? (
+            <SignOutRow key={row.key} row={row} isFirst={i === 0} label={label} />
           ) : (
-            <SettingsLink key={row.key} row={row} isFirst={i === 0} />
-          ),
-        )}
+            <SettingsLink key={row.key} row={row} isFirst={i === 0} label={label} />
+          );
+        })}
       </div>
 
       <p className="mt-6 text-center text-xs font-semibold text-muted-foreground/70">
-        StudyOS · v0.1 · Works offline
+        {t("versionLine")}
       </p>
     </div>
   );
 }
 
-function SettingsLink({ row, isFirst }: { row: SettingsRow; isFirst: boolean }) {
+function SettingsLink({
+  row,
+  isFirst,
+  label,
+}: {
+  row: SettingsRow;
+  isFirst: boolean;
+  label: string;
+}) {
   const Icon = row.icon;
   return (
     <Link
@@ -98,7 +148,7 @@ function SettingsLink({ row, isFirst }: { row: SettingsRow; isFirst: boolean }) 
       >
         <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
       </span>
-      <span className="flex-1 text-[15px] font-bold">{row.label}</span>
+      <span className="flex-1 text-[15px] font-bold">{label}</span>
       <ChevronRight
         className="h-[18px] w-[18px] text-muted-foreground/70"
         strokeWidth={2}
@@ -108,7 +158,15 @@ function SettingsLink({ row, isFirst }: { row: SettingsRow; isFirst: boolean }) 
   );
 }
 
-function SignOutRow({ row, isFirst }: { row: SettingsRow; isFirst: boolean }) {
+function SignOutRow({
+  row,
+  isFirst,
+  label,
+}: {
+  row: SettingsRow;
+  isFirst: boolean;
+  label: string;
+}) {
   const Icon = row.icon;
   return (
     <form action={signOut}>
@@ -124,7 +182,7 @@ function SignOutRow({ row, isFirst }: { row: SettingsRow; isFirst: boolean }) {
         >
           <Icon className="h-[18px] w-[18px]" strokeWidth={2} />
         </span>
-        <span className="flex-1 text-[15px] font-bold text-danger">{row.label}</span>
+        <span className="flex-1 text-[15px] font-bold text-danger">{label}</span>
       </button>
     </form>
   );

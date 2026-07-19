@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Plus } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,9 +21,10 @@ interface NotesPageProps {
 
 export default async function NotesPage({ searchParams }: NotesPageProps) {
   const { subject, q } = await searchParams;
-  const [profile, notesResult] = await Promise.all([
+  const [profile, notesResult, t] = await Promise.all([
     getMyProfile(),
     listNotes({ subjectId: subject, search: q }),
+    getTranslations("notes"),
   ]);
 
   if (!profile) return null;
@@ -42,18 +44,20 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
       <header className="sticky top-0 z-10 -mx-5 backdrop-blur supports-[backdrop-filter]:bg-background/80 sm:-mx-7 lg:-mx-11">
         <div className="mx-auto flex max-w-[780px] flex-col gap-3.5 px-5 pb-3.5 pt-4 sm:px-7 sm:pt-5 lg:max-w-[1140px] lg:px-11 lg:pt-6">
           <div className="flex items-center justify-between gap-3">
-            <h1 className="text-[26px] font-extrabold tracking-tight sm:text-[30px]">Notes</h1>
-            <Button asChild variant="outline" size="icon" className="lg:hidden" aria-label="New note">
-              <Link href="/app/notes/new">
-                <Plus className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
-              </Link>
-            </Button>
-            <Button asChild className="hidden lg:inline-flex">
-              <Link href="/app/notes/new">
-                <Plus className="h-4 w-4" aria-hidden />
-                New note
-              </Link>
-            </Button>
+            <h1 className="text-[26px] font-extrabold tracking-tight sm:text-[30px]">{t("title")}</h1>
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="icon" className="lg:hidden" aria-label={t("newNote")}>
+                <Link href="/app/notes/new">
+                  <Plus className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
+                </Link>
+              </Button>
+              <Button asChild className="hidden lg:inline-flex">
+                <Link href="/app/notes/new">
+                  <Plus className="h-4 w-4" aria-hidden />
+                  {t("newNote")}
+                </Link>
+              </Button>
+            </div>
           </div>
           <Suspense fallback={<ToolbarSkeleton />}>
             <NotesToolbar subjects={profile.subjects} />

@@ -31,6 +31,7 @@ export const getMyProfile = cache(async (): Promise<AcademicProfile | null> => {
       .select(
         `
           preferred_language,
+          user_role,
           created_at,
           updated_at,
           board:boards ( id, name, short_name, slug, sort_order ),
@@ -74,10 +75,13 @@ export const getMyProfile = cache(async (): Promise<AcademicProfile | null> => {
     user.email?.split("@")[0] ??
     "there";
 
+  const role = pref.user_role === "teacher" ? "teacher" : "student";
+
   return {
     userId: user.id,
     displayName,
     email: user.email ?? "",
+    role,
     board: {
       id: board.id,
       name: board.name,
