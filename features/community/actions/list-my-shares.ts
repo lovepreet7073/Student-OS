@@ -3,7 +3,7 @@
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { err, ok, type ActionError, type Result } from "@/lib/result";
 
-import type { CommunityNoteListItem, CommunityNoteStatus } from "../types";
+import type { CommunityNoteListItem } from "../types";
 import { toListItem } from "./_normalize";
 
 export interface MyShareItem extends CommunityNoteListItem {
@@ -59,20 +59,4 @@ export async function listMyShares(): Promise<Result<MyShareItem[], ActionError>
   });
 
   return ok(items);
-}
-
-/**
- * Buckets a list of MyShareItems by status so the profile UI can render each
- * group under its own header.
- */
-export function bucketByStatus(
-  items: MyShareItem[],
-): Record<CommunityNoteStatus, MyShareItem[]> {
-  const buckets: Record<CommunityNoteStatus, MyShareItem[]> = {
-    pending: [],
-    approved: [],
-    rejected: [],
-  };
-  for (const item of items) buckets[item.status].push(item);
-  return buckets;
 }

@@ -16,7 +16,8 @@ import { UserAvatar } from "@/components/layout/user-avatar";
 import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/academic-identity/actions/get-my-profile";
 import { signOut } from "@/features/auth/actions/sign-out";
-import { bucketByStatus, listMyShares } from "@/features/community/actions/list-my-shares";
+import { listMyShares } from "@/features/community/actions/list-my-shares";
+import { bucketByStatus } from "@/features/community/lib/bucket-shares";
 import { MySharesSection } from "@/features/community/components/my-shares-section";
 
 export const metadata: Metadata = { title: "Profile" };
