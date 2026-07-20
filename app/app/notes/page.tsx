@@ -16,14 +16,14 @@ import { NotesToolbar } from "@/features/notes/components/notes-toolbar";
 export const metadata: Metadata = { title: "Notes" };
 
 interface NotesPageProps {
-  searchParams: Promise<{ subject?: string; q?: string }>;
+  searchParams: Promise<{ subject?: string; chapter?: string; q?: string }>;
 }
 
 export default async function NotesPage({ searchParams }: NotesPageProps) {
-  const { subject, q } = await searchParams;
+  const { subject, chapter, q } = await searchParams;
   const [profile, notesResult, t] = await Promise.all([
     getMyProfile(),
-    listNotes({ subjectId: subject, search: q }),
+    listNotes({ subjectId: subject, chapterId: chapter, search: q }),
     getTranslations("notes"),
   ]);
 
@@ -36,7 +36,7 @@ export default async function NotesPage({ searchParams }: NotesPageProps) {
     );
   }
 
-  const hasFilters = Boolean(subject) || Boolean(q);
+  const hasFilters = Boolean(subject) || Boolean(chapter) || Boolean(q);
   const notes = notesResult.data.items;
 
   return (

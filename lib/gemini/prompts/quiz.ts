@@ -6,12 +6,15 @@ export type QuizQuestionType =
   | "fill_blank"
   | "short_answer";
 
+export type QuizMode = "quick" | "board_paper";
+
 export interface QuizPromptInput {
   ctx: StudentContext;
   subjectName: string;   // scoped subject (may differ from active subjects)
   topic: string;
   questionCount: number;
   questionTypes: readonly QuizQuestionType[];
+  mode?: QuizMode;
 }
 
 /**

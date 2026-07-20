@@ -74,6 +74,7 @@ export async function generateQuiz(
         topic: parsed.data.topic,
         questionCount: parsed.data.questionCount,
         questionTypes: parsed.data.questionTypes,
+        mode: parsed.data.mode,
       }),
       schema: geminiQuizResponseSchema,
       maxRetries: 1,

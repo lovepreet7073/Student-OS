@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileText,
+  GraduationCap,
   Users,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -30,6 +31,22 @@ export async function CategoryGrid({ overview }: Props) {
   const t = await getTranslations("workspace.categories");
 
   const items = [
+    {
+      key: "calendar",
+      icon: CalendarClock,
+      href: "/app/calendar",
+      count: 0,
+      unitKey: "viewAgenda",
+      tone: "warning" as const,
+    },
+    {
+      key: "syllabus",
+      icon: GraduationCap,
+      href: "/app/syllabus",
+      count: 0,
+      unitKey: "browse",
+      tone: "info" as const,
+    },
     {
       key: "notes",
       icon: BookText,

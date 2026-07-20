@@ -69,6 +69,8 @@
       "gradeTest": { "title": "Grade a test", "hint": "Paper test AI" }
     },
     "categories": {
+      "calendar": "Calendar",
+      "syllabus": "Syllabus",
       "notes": "Notes",
       "files": "Files",
       "tasks": "Tasks",
@@ -77,6 +79,8 @@
       "plan": "Study plan",
       "tests": "Test evals",
       "community": "Community",
+      "browse": "Browse chapters",
+      "viewAgenda": "Next 30 days",
       "planActive": "Active",
       "planNone": "None",
       "sharedNotes": "shared",

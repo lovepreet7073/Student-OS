@@ -24,7 +24,7 @@ export async function listNotes(
       message: "Invalid list parameters.",
     });
   }
-  const { subjectId, bookmarkedOnly, search, limit, offset } = parsed.data;
+  const { subjectId, chapterId, bookmarkedOnly, search, limit, offset } = parsed.data;
 
   const scope = await getAcademicScope();
   if (!scope) {
@@ -60,6 +60,10 @@ export async function listNotes(
       return ok({ items: [], total: 0 });
     }
     query = query.eq("subject_id", subjectId);
+  }
+
+  if (chapterId) {
+    query = query.eq("chapter_id", chapterId);
   }
 
   if (bookmarkedOnly) {

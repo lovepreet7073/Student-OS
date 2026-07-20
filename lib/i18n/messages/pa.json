@@ -69,6 +69,8 @@
       "gradeTest": { "title": "ਟੈਸਟ ਦਰਜਾ ਦਿਓ", "hint": "ਪੇਪਰ ਟੈਸਟ AI" }
     },
     "categories": {
+      "calendar": "ਕੈਲੰਡਰ",
+      "syllabus": "ਸਿਲੇਬਸ",
       "notes": "ਨੋਟਸ",
       "files": "ਫ਼ਾਈਲਾਂ",
       "tasks": "ਕੰਮ",
@@ -77,6 +79,8 @@
       "plan": "ਸਟੱਡੀ ਪਲਾਨ",
       "tests": "ਟੈਸਟ ਦਰਜੇ",
       "community": "ਕਮਿਊਨਿਟੀ",
+      "browse": "ਚੈਪਟਰ ਦੇਖੋ",
+      "viewAgenda": "ਅਗਲੇ 30 ਦਿਨ",
       "planActive": "ਸਰਗਰਮ",
       "planNone": "ਕੋਈ ਨਹੀਂ",
       "sharedNotes": "ਸਾਂਝੇ ਕੀਤੇ",

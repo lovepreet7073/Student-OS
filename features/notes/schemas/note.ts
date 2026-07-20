@@ -25,6 +25,7 @@ export type UpdateNoteInput = z.infer<typeof updateNoteSchema>;
 
 export const notesQuerySchema = z.object({
   subjectId: uuid.optional(),
+  chapterId: uuid.optional(),
   bookmarkedOnly: z.boolean().optional(),
   search: z.string().trim().max(200).optional(),
   limit: z.number().int().min(1).max(100).default(50),

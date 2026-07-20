@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft, GraduationCap, Sparkles, Zap } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { generateQuiz } from "../actions/generate-quiz";
 import {
   generateQuizSchema,
   type GenerateQuizInput,
+  type QuizMode,
 } from "../schemas/quiz";
 import type { QuizQuestionType } from "../types";
 
@@ -35,7 +37,10 @@ const QUESTION_TYPE_META: {
   { key: "short_answer",  label: "Short answer",     hint: "1–3 sentences" },
 ];
 
-const COUNT_OPTIONS = [5, 10, 15];
+const QUICK_COUNT_OPTIONS = [5, 10, 15];
+const BOARD_COUNT_OPTIONS = [15, 20, 30, 40];
+
+const ALL_TYPES: QuizQuestionType[] = ["mcq", "true_false", "fill_blank", "short_answer"];
 
 export function QuizGeneratorForm({ subjects }: QuizGeneratorFormProps) {
   const router = useRouter();
@@ -53,11 +58,25 @@ export function QuizGeneratorForm({ subjects }: QuizGeneratorFormProps) {
       topic: "",
       questionCount: 10,
       questionTypes: ["mcq"],
+      mode: "quick",
     },
   });
 
   const selectedTypes = useWatch({ control, name: "questionTypes" });
   const selectedCount = useWatch({ control, name: "questionCount" });
+  const selectedMode = useWatch({ control, name: "mode" });
+
+  const countOptions = selectedMode === "board_paper" ? BOARD_COUNT_OPTIONS : QUICK_COUNT_OPTIONS;
+
+  // When the mode flips to Board Paper: snap defaults to something realistic.
+  // Board papers need all four question-type sections + at least 15 questions.
+  useEffect(() => {
+    if (selectedMode === "board_paper") {
+      setValue("questionTypes", ALL_TYPES, { shouldValidate: false });
+      if (selectedCount < 15) setValue("questionCount", 20, { shouldValidate: false });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMode]);
 
   const toggleType = (type: QuizQuestionType) => {
     const current = new Set(selectedTypes);
@@ -100,6 +119,51 @@ export function QuizGeneratorForm({ subjects }: QuizGeneratorFormProps) {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6" noValidate>
         <div className="flex flex-col gap-2">
+          <Label>Mode</Label>
+          <div className="grid grid-cols-2 gap-2.5">
+            {(
+              [
+                {
+                  key: "quick" as const,
+                  icon: Zap,
+                  label: "Quick quiz",
+                  hint: "5–15 Qs, mixed types, warm-up.",
+                },
+                {
+                  key: "board_paper" as const,
+                  icon: GraduationCap,
+                  label: "Board paper",
+                  hint: "15–40 Qs, sectioned like a real exam.",
+                },
+              ] as { key: QuizMode; icon: typeof Zap; label: string; hint: string }[]
+            ).map((opt) => {
+              const on = selectedMode === opt.key;
+              return (
+                <button
+                  key={opt.key}
+                  type="button"
+                  onClick={() => setValue("mode", opt.key, { shouldValidate: true })}
+                  aria-pressed={on}
+                  className={cn(
+                    "flex flex-col items-start gap-1 rounded-md border p-3.5 text-left transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    on
+                      ? "border-2 border-primary bg-accent text-accent-foreground"
+                      : "border-border bg-card text-foreground hover:border-primary/40",
+                  )}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <opt.icon className="h-3.5 w-3.5" strokeWidth={2.2} aria-hidden />
+                    <span className="text-[14px] font-bold">{opt.label}</span>
+                  </div>
+                  <span className="text-[11.5px] text-muted-foreground">{opt.hint}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
           <Label htmlFor="subjectId">Subject</Label>
           <select
             id="subjectId"
@@ -140,8 +204,13 @@ export function QuizGeneratorForm({ subjects }: QuizGeneratorFormProps) {
 
         <div className="flex flex-col gap-2">
           <Label>Number of questions</Label>
-          <div className="grid grid-cols-3 gap-2.5">
-            {COUNT_OPTIONS.map((n) => (
+          <div
+            className={cn(
+              "grid gap-2.5",
+              countOptions.length === 4 ? "grid-cols-4" : "grid-cols-3",
+            )}
+          >
+            {countOptions.map((n) => (
               <button
                 key={n}
                 type="button"
