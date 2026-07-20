@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FolderPlus, Plus, Sparkles, Upload } from "lucide-react";
+import { Brain, Plus, Sparkles, Upload } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 /**
@@ -10,10 +10,10 @@ export async function QuickActions() {
   const t = await getTranslations("workspace.quickActions");
 
   const actions = [
-    { key: "newNote",  icon: Plus,        href: "/app/notes/new", tone: "primary" as const },
-    { key: "upload",   icon: Upload,      href: "/app/library",   tone: "brand"   as const },
-    { key: "newQuiz",  icon: Sparkles,    href: "/app/study/new", tone: "success" as const },
-    { key: "gradeTest",icon: FolderPlus,  href: "/app/tests/new", tone: "danger"  as const },
+    { key: "newNote",  icon: Plus,     href: "/app/notes/new", tone: "primary" as const },
+    { key: "askAi",    icon: Brain,    href: "/app/doubt",     tone: "brand"   as const },
+    { key: "newQuiz",  icon: Sparkles, href: "/app/study/new", tone: "success" as const },
+    { key: "upload",   icon: Upload,   href: "/app/library",   tone: "danger"  as const },
   ];
 
   const TONES = {

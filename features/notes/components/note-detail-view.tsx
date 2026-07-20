@@ -6,6 +6,7 @@ import { ShareToCommunityButton } from "@/features/community/components/share-to
 import { formatRelativeTime } from "@/lib/format-date";
 
 import type { NoteListItem } from "../types";
+import { AiActionsMenu } from "./ai-actions-menu";
 import { BookmarkToggleButton } from "./bookmark-toggle-button";
 import { DeleteNoteDialog } from "./delete-note-dialog";
 import { ShareNoteDialog } from "./share-note-dialog";
@@ -47,6 +48,7 @@ export function NoteDetailView({ note }: NoteDetailViewProps) {
           <ShareToCommunityButton noteId={note.id} />
           <DeleteNoteDialog noteId={note.id} noteTitle={note.title} />
         </div>
+        <AiActionsMenu noteId={note.id} />
       </header>
 
       <section
