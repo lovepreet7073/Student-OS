@@ -79,13 +79,15 @@
       "plan": "Study plan",
       "tests": "Test evals",
       "community": "Community",
+      "achievements": "Achievements",
       "browse": "Browse chapters",
       "viewAgenda": "Next 30 days",
       "planActive": "Active",
       "planNone": "None",
       "sharedNotes": "shared",
       "plan_singular": "active plan",
-      "plan_none": "no active plan"
+      "plan_none": "no active plan",
+      "badges": "badges"
     },
     "activity": {
       "openedEmpty": {

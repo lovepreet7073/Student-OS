@@ -85,7 +85,9 @@
       "planNone": "ਕੋਈ ਨਹੀਂ",
       "sharedNotes": "ਸਾਂਝੇ ਕੀਤੇ",
       "plan_singular": "ਸਰਗਰਮ ਪਲਾਨ",
-      "plan_none": "ਕੋਈ ਸਰਗਰਮ ਪਲਾਨ ਨਹੀਂ"
+      "plan_none": "ਕੋਈ ਸਰਗਰਮ ਪਲਾਨ ਨਹੀਂ",
+      "achievements": "ਪ੍ਰਾਪਤੀਆਂ",
+      "badges": "ਬੈਜ"
     },
     "activity": {
       "openedEmpty": {

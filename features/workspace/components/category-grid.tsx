@@ -8,6 +8,7 @@ import {
   ClipboardList,
   FileText,
   GraduationCap,
+  Trophy,
   Users,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
@@ -112,6 +113,14 @@ export async function CategoryGrid({ overview }: Props) {
       count: overview.sharedToCommunity,
       unitKey: "sharedNotes",
       tone: "brand" as const,
+    },
+    {
+      key: "achievements",
+      icon: Trophy,
+      href: "/app/achievements",
+      count: 0,
+      unitKey: "badges",
+      tone: "warning" as const,
     },
   ];
 

@@ -24,6 +24,9 @@ import type { QuizQuestionType } from "../types";
 
 interface QuizGeneratorFormProps {
   subjects: Subject[];
+  defaultSubjectId?: string;
+  defaultTopic?: string;
+  defaultMode?: QuizMode;
 }
 
 const QUESTION_TYPE_META: {
@@ -42,7 +45,12 @@ const BOARD_COUNT_OPTIONS = [15, 20, 30, 40];
 
 const ALL_TYPES: QuizQuestionType[] = ["mcq", "true_false", "fill_blank", "short_answer"];
 
-export function QuizGeneratorForm({ subjects }: QuizGeneratorFormProps) {
+export function QuizGeneratorForm({
+  subjects,
+  defaultSubjectId,
+  defaultTopic,
+  defaultMode,
+}: QuizGeneratorFormProps) {
   const router = useRouter();
 
   const {
@@ -54,11 +62,11 @@ export function QuizGeneratorForm({ subjects }: QuizGeneratorFormProps) {
   } = useForm<GenerateQuizInput>({
     resolver: zodResolver(generateQuizSchema),
     defaultValues: {
-      subjectId: subjects[0]?.id ?? "",
-      topic: "",
-      questionCount: 10,
-      questionTypes: ["mcq"],
-      mode: "quick",
+      subjectId: defaultSubjectId ?? subjects[0]?.id ?? "",
+      topic: defaultTopic ?? "",
+      questionCount: defaultMode === "board_paper" ? 20 : 10,
+      questionTypes: defaultMode === "board_paper" ? ALL_TYPES : ["mcq"],
+      mode: defaultMode ?? "quick",
     },
   });
 

@@ -7,6 +7,7 @@ import {
   Bookmark,
   Download,
   ExternalLink,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -20,7 +21,10 @@ import { getFileUrl } from "../actions/get-file-url";
 import { toggleFileBookmark } from "../actions/toggle-bookmark";
 import { formatBytes } from "../lib/mime";
 import type { StudyFile } from "../types";
+import { FileAiActions } from "./file-ai-actions";
 import { FileViewer } from "./file-viewer";
+
+const AI_MAX_BYTES = 15 * 1024 * 1024;
 
 interface FileDetailViewProps {
   file: StudyFile;
@@ -145,6 +149,36 @@ export function FileDetailView({ file }: FileDetailViewProps) {
           {file.description}
         </p>
       ) : null}
+
+      <section
+        aria-labelledby="file-ai-title"
+        className="mb-5 rounded-xl border border-primary/25 bg-accent/60 p-4"
+      >
+        <div className="mb-1 flex items-center gap-2">
+          <span
+            aria-hidden
+            className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/12 text-primary"
+          >
+            <Sparkles className="h-3.5 w-3.5" strokeWidth={2.2} />
+          </span>
+          <h2
+            id="file-ai-title"
+            className="text-[12.5px] font-bold uppercase tracking-wider text-accent-foreground"
+          >
+            AI on this document
+          </h2>
+        </div>
+        <p className="mb-3 text-[12px] text-muted-foreground">
+          Summarise the whole PDF, pull out key points, or explain it in simpler words.
+        </p>
+        {file.sizeBytes > AI_MAX_BYTES ? (
+          <p className="text-[12px] font-semibold text-danger">
+            AI can't read files over 15 MB yet. Upload a smaller PDF or image.
+          </p>
+        ) : (
+          <FileAiActions fileId={file.id} />
+        )}
+      </section>
 
       <FileViewer
         url={signedUrl}

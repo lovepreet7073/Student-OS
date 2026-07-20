@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { ArrowLeft, Lightbulb, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import type { TestEvaluationWithPages } from "../types";
 import { EvaluationAnswerCard } from "./evaluation-answer-card";
 import { EvaluationScoreVisual } from "./evaluation-score-visual";
 import { EvaluationStatusCard } from "./evaluation-status-card";
+import { WeakTopicsPanel } from "./weak-topics-panel";
 
 interface EvaluationReportProps {
   evaluation: TestEvaluationWithPages;
@@ -90,27 +91,11 @@ export function EvaluationReport({ evaluation }: EvaluationReportProps) {
           </div>
 
           {evaluation.recommendedTopics && evaluation.recommendedTopics.length > 0 ? (
-            <section
-              aria-labelledby="recommend-title"
-              className="rounded-xl border border-primary/30 bg-accent p-5"
-            >
-              <div className="mb-2 flex items-center gap-2">
-                <Lightbulb className="h-4 w-4 text-primary" aria-hidden />
-                <h3
-                  id="recommend-title"
-                  className="text-[13px] font-bold uppercase tracking-wider text-accent-foreground"
-                >
-                  Revise these topics
-                </h3>
-              </div>
-              <ul className="flex flex-col gap-1">
-                {evaluation.recommendedTopics.map((topic, i) => (
-                  <li key={i} className="text-[14px] leading-relaxed text-accent-foreground">
-                    · {topic}
-                  </li>
-                ))}
-              </ul>
-            </section>
+            <WeakTopicsPanel
+              topics={evaluation.recommendedTopics}
+              subjectId={evaluation.subjectId}
+              subjectName={evaluation.subjectName}
+            />
           ) : null}
         </>
       )}
