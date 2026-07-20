@@ -28,8 +28,8 @@ export const SelectionCard = React.forwardRef<HTMLButtonElement, SelectionCardPr
         aria-checked={selected}
         onClick={onSelect}
         className={cn(
-          "flex w-full items-center gap-4 rounded-lg bg-card p-4 text-left transition-colors",
-          "min-h-[64px]",
+          "flex w-full items-center gap-3 rounded-lg bg-card px-3 py-2.5 text-left transition-colors",
+          "min-h-[52px]",
           selected
             ? "border-2 border-primary bg-accent"
             : "border border-border hover:border-primary/40",
@@ -40,9 +40,9 @@ export const SelectionCard = React.forwardRef<HTMLButtonElement, SelectionCardPr
       >
         {badge}
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-base font-bold leading-tight">{title}</span>
+          <span className="text-[14.5px] font-bold leading-tight">{title}</span>
           {description ? (
-            <span className="mt-0.5 text-[13px] leading-snug text-muted-foreground">
+            <span className="mt-0.5 text-[12px] leading-snug text-muted-foreground">
               {description}
             </span>
           ) : null}
@@ -50,11 +50,11 @@ export const SelectionCard = React.forwardRef<HTMLButtonElement, SelectionCardPr
         <span
           aria-hidden
           className={cn(
-            "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-colors",
+            "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full transition-colors",
             selected ? "bg-primary text-primary-foreground" : "border-2 border-border",
           )}
         >
-          {selected ? <Check className="h-3.5 w-3.5" strokeWidth={3.2} /> : null}
+          {selected ? <Check className="h-3 w-3" strokeWidth={3.2} /> : null}
         </span>
       </button>
     );
@@ -79,7 +79,7 @@ export function SelectionBadge({ tone, children }: SelectionBadgeProps) {
     <span
       aria-hidden
       className={cn(
-        "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md text-[15px] font-extrabold",
+        "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-md text-[13px] font-extrabold",
         badgeTones[tone],
       )}
     >

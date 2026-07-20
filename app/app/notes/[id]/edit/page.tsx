@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/academic-identity/actions/get-my-profile";
 import { getNote } from "@/features/notes/actions/get-note";
 import { NoteForm } from "@/features/notes/components/note-form";
+import { listChapters } from "@/features/study-space/actions/list-chapters";
 
 export const metadata: Metadata = { title: "Edit note" };
 
@@ -16,11 +17,16 @@ export default async function EditNotePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [profile, noteResult] = await Promise.all([getMyProfile(), getNote(id)]);
+  const [profile, noteResult, chaptersResult] = await Promise.all([
+    getMyProfile(),
+    getNote(id),
+    listChapters(),
+  ]);
   if (!profile) return null;
   if (!noteResult.ok) notFound();
 
   const note = noteResult.data;
+  const chapters = chaptersResult.ok ? chaptersResult.data : [];
 
   return (
     <div className="mx-auto max-w-[780px] px-5 pb-10 pt-4 sm:px-7 sm:pt-6 lg:px-11 lg:pt-8">
@@ -34,11 +40,13 @@ export default async function EditNotePage({
       </nav>
       <NoteForm
         subjects={profile.subjects}
+        chapters={chapters}
         initial={{
           id: note.id,
           title: note.title,
           content: note.content,
           subjectId: note.subjectId,
+          chapterId: note.chapterId,
         }}
       />
     </div>

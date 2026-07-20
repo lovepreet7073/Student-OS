@@ -43,6 +43,15 @@ export async function sendEmailOtp(
   });
 
   if (error) {
+    // Log the full Supabase error server-side so we can debug production
+    // issues — the shape is `AuthError { status, code, message }`. Client
+    // sees a friendly one-liner only.
+    console.error("[sendEmailOtp] Supabase auth error", {
+      status: (error as { status?: number }).status,
+      code: (error as { code?: string }).code,
+      message: error.message,
+      email,
+    });
     const lower = error.message.toLowerCase();
     if (lower.includes("rate limit") || lower.includes("too many")) {
       return err({
@@ -50,9 +59,23 @@ export async function sendEmailOtp(
         message: "You're going too fast. Wait a minute and try again.",
       });
     }
+    if (lower.includes("smtp") || lower.includes("relay") || lower.includes("sending")) {
+      return err({
+        code: "UNKNOWN",
+        message:
+          "Email server rejected the message. If you set up custom SMTP recently, check the sender email matches your verified domain.",
+      });
+    }
+    if (lower.includes("only send") || lower.includes("testing")) {
+      return err({
+        code: "UNKNOWN",
+        message:
+          "Your email provider only allows sending to your own account during testing. Sign in with the same email that owns your Resend/SMTP account, or verify a domain.",
+      });
+    }
     return err({
       code: "UNKNOWN",
-      message: "Couldn't send the code. Check the email address and try again.",
+      message: `Couldn't send the code — ${error.message}`,
     });
   }
 

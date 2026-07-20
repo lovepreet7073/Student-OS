@@ -36,14 +36,20 @@ export async function updateNote(
 
   const supabase = await getSupabaseServer();
 
+  const supabaseUser = await supabase.auth.getUser();
+  const userId = supabaseUser.data.user?.id;
+  if (!userId) return err({ code: "UNAUTHORIZED", message: "Please sign in." });
+
   const { data, error } = await supabase
     .from("notes")
     .update({
       title: parsed.data.title,
       content: parsed.data.content,
       subject_id: parsed.data.subjectId,
+      chapter_id: parsed.data.chapterId ?? null,
     })
     .eq("id", parsed.data.id)
+    .eq("user_id", userId)
     .select("id")
     .maybeSingle();
 

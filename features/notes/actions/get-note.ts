@@ -11,27 +11,39 @@ export async function getNote(
 ): Promise<Result<NoteListItem, ActionError>> {
   const supabase = await getSupabaseServer();
 
+  // Explicit ownership filter — defence in depth beyond RLS. The Module 16
+  // share-via-link RLS policy exposes rows where `visibility = 'link'` to
+  // any authenticated user; without this filter, a signed-in student could
+  // navigate to /app/notes/[id] and view a peer's shared note in the OWNER
+  // UI (edit / delete / share). Enforce it up-front so /app/notes/[id]
+  // only ever shows OWN notes; public link viewers use /s/n/[token].
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return err({ code: "UNAUTHORIZED", message: "Please sign in." });
+
   const { data, error } = await supabase
     .from("notes")
     .select(
       `
-        id, user_id, board_id, class_id, medium_id, subject_id,
+        id, user_id, board_id, class_id, medium_id, subject_id, chapter_id,
         title, content, is_bookmarked, visibility, share_token,
         created_at, updated_at,
-        subject:subjects ( name, slug )
+        subject:subjects ( name, slug ),
+        chapter:chapters ( name )
       `,
     )
     .eq("id", id)
+    .eq("user_id", user.id)
     .maybeSingle();
 
-  if (error) {
-    return err({ code: "DB", message: "Couldn't load the note." });
-  }
-  if (!data) {
-    return err({ code: "NOT_FOUND", message: "Note not found." });
-  }
+  if (error) return err({ code: "DB", message: "Couldn't load the note." });
+  if (!data) return err({ code: "NOT_FOUND", message: "Note not found." });
 
   const subject = Array.isArray(data.subject) ? data.subject[0] : data.subject;
+  const chapter = Array.isArray((data as { chapter?: unknown }).chapter)
+    ? ((data as { chapter: { name: string }[] }).chapter[0] ?? null)
+    : ((data as { chapter?: { name: string } | null }).chapter ?? null);
 
   // Fire-and-forget: swallows failure and dedupes to one open per day.
   await logActivity({
@@ -51,6 +63,7 @@ export async function getNote(
     classId: data.class_id,
     mediumId: data.medium_id,
     subjectId: data.subject_id,
+    chapterId: (data as { chapter_id?: string | null }).chapter_id ?? null,
     title: data.title,
     content: data.content,
     isBookmarked: data.is_bookmarked,
@@ -60,5 +73,6 @@ export async function getNote(
     updatedAt: data.updated_at,
     subjectName: subject?.name ?? "—",
     subjectSlug: subject?.slug ?? "",
+    chapterName: chapter?.name ?? null,
   });
 }

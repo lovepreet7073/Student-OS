@@ -13,11 +13,11 @@ import { cn } from "@/lib/utils";
  */
 const buttonVariants = cva(
   [
-    "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium",
+    "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md text-[13px] font-medium",
     "transition-colors duration-150",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "disabled:pointer-events-none disabled:opacity-50",
-    "[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+    "[&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0",
     "touch-manipulation select-none",
   ],
   {
@@ -31,11 +31,14 @@ const buttonVariants = cva(
         danger: "bg-danger text-danger-foreground shadow-sm hover:bg-danger/90",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      // Density note: mobile stays at 44px on md+ (constitutional touch-target
+      // rule). Desktop is denser — sm:h-9 (36px) feels dashboard-native.
+      // `sm` variant is dense on both, meant for toolbars/dialogs only.
       size: {
-        sm: "h-9 px-3 text-xs",
-        md: "h-11 px-4 sm:h-10",
-        lg: "h-12 px-6 text-base sm:h-11",
-        icon: "h-11 w-11 sm:h-10 sm:w-10",
+        sm:   "h-8 px-2.5 text-[11.5px]",
+        md:   "h-11 px-3 sm:h-9",
+        lg:   "h-11 px-5 text-[14px] sm:h-10",
+        icon: "h-11 w-11 sm:h-9 sm:w-9",
       },
     },
     defaultVariants: {

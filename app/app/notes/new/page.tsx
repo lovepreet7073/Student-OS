@@ -5,12 +5,14 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/academic-identity/actions/get-my-profile";
 import { NoteForm } from "@/features/notes/components/note-form";
+import { listChapters } from "@/features/study-space/actions/list-chapters";
 
 export const metadata: Metadata = { title: "New note" };
 
 export default async function NewNotePage() {
-  const profile = await getMyProfile();
+  const [profile, chaptersResult] = await Promise.all([getMyProfile(), listChapters()]);
   if (!profile) return null;
+  const chapters = chaptersResult.ok ? chaptersResult.data : [];
 
   return (
     <div className="mx-auto max-w-[780px] px-5 pb-10 pt-4 sm:px-7 sm:pt-6 lg:px-11 lg:pt-8">
@@ -22,7 +24,7 @@ export default async function NewNotePage() {
         </Button>
         <h1 className="text-[22px] font-extrabold tracking-tight sm:text-[26px]">New note</h1>
       </nav>
-      <NoteForm subjects={profile.subjects} />
+      <NoteForm subjects={profile.subjects} chapters={chapters} />
     </div>
   );
 }

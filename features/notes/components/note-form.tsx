@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Subject } from "@/features/academic-identity/types";
+import type { Chapter } from "@/features/study-space/types";
 
 import { createNote } from "../actions/create-note";
 import { updateNote } from "../actions/update-note";
@@ -18,23 +18,26 @@ import { createNoteSchema, type CreateNoteInput } from "../schemas/note";
 
 interface NoteFormProps {
   subjects: Subject[];
+  chapters?: Chapter[];
   initial?: {
     id: string;
     title: string;
     content: string;
     subjectId: string;
+    chapterId?: string | null;
   };
 }
 
 const REDIRECT_TO = "/app/notes";
 
-export function NoteForm({ subjects, initial }: NoteFormProps) {
+export function NoteForm({ subjects, chapters = [], initial }: NoteFormProps) {
   const isEditing = Boolean(initial);
 
   const {
     register,
     handleSubmit,
     setError,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<CreateNoteInput>({
     resolver: zodResolver(createNoteSchema),
@@ -42,8 +45,12 @@ export function NoteForm({ subjects, initial }: NoteFormProps) {
       title: initial?.title ?? "",
       content: initial?.content ?? "",
       subjectId: initial?.subjectId ?? subjects[0]?.id ?? "",
+      chapterId: initial?.chapterId ?? "",
     },
   });
+
+  const selectedSubjectId = useWatch({ control, name: "subjectId" });
+  const chaptersForSubject = chapters.filter((c) => c.subjectId === selectedSubjectId);
 
   async function onSubmit(values: CreateNoteInput) {
     const result = isEditing
@@ -84,26 +91,55 @@ export function NoteForm({ subjects, initial }: NoteFormProps) {
         ) : null}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="subjectId">Subject</Label>
-        <select
-          id="subjectId"
-          className="flex h-11 rounded-md border border-input bg-transparent px-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-10 sm:text-sm"
-          aria-invalid={!!errors.subjectId || undefined}
-          aria-describedby={errors.subjectId ? "subject-error" : undefined}
-          {...register("subjectId")}
-        >
-          {subjects.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        {errors.subjectId ? (
-          <p id="subject-error" role="alert" className="text-xs font-bold text-danger">
-            {errors.subjectId.message}
-          </p>
-        ) : null}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="subjectId">Subject</Label>
+          <select
+            id="subjectId"
+            className="flex h-11 rounded-md border border-input bg-transparent px-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-10 sm:text-sm"
+            aria-invalid={!!errors.subjectId || undefined}
+            {...register("subjectId")}
+          >
+            {subjects.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+          {errors.subjectId ? (
+            <p role="alert" className="text-xs font-bold text-danger">
+              {errors.subjectId.message}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="chapterId">
+            Chapter <span className="font-normal text-muted-foreground">(optional)</span>
+          </Label>
+          <select
+            id="chapterId"
+            className="flex h-11 rounded-md border border-input bg-transparent px-3 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:h-10 sm:text-sm"
+            disabled={chaptersForSubject.length === 0}
+            {...register("chapterId")}
+          >
+            <option value="">No chapter</option>
+            {chaptersForSubject.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {chaptersForSubject.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              No chapters yet.{" "}
+              <Link href="/app/library" className="font-medium text-primary hover:underline">
+                Create in Library
+              </Link>{" "}
+              to organize by chapter.
+            </p>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">

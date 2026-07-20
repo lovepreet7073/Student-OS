@@ -12,6 +12,7 @@ export const createNoteSchema = z.object({
     .string()
     .max(50_000, "Note is too long — split it into multiple notes"),
   subjectId: uuid,
+  chapterId: uuid.optional().or(z.literal("").transform(() => undefined)),
 });
 
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;

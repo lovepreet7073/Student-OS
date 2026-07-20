@@ -45,6 +45,7 @@ export async function createNote(
       class_id: scope.classId,
       medium_id: scope.mediumId,
       subject_id: parsed.data.subjectId,
+      chapter_id: parsed.data.chapterId ?? null,
       title: parsed.data.title,
       content: parsed.data.content,
     })

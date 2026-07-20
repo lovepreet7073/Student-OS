@@ -63,6 +63,7 @@
     "quickActions": {
       "newNote":   { "title": "New note", "hint": "Start writing" },
       "askAi":     { "title": "Ask AI", "hint": "Solve any doubt" },
+      "focus":     { "title": "Focus timer", "hint": "25/5 Pomodoro" },
       "upload":    { "title": "Upload file", "hint": "PDFs, images" },
       "newQuiz":   { "title": "New quiz", "hint": "AI-generated" },
       "gradeTest": { "title": "Grade a test", "hint": "Paper test AI" }

@@ -63,6 +63,7 @@
     "quickActions": {
       "newNote":   { "title": "ਨਵਾਂ ਨੋਟ", "hint": "ਲਿਖਣਾ ਸ਼ੁਰੂ ਕਰੋ" },
       "askAi":     { "title": "AI ਨੂੰ ਪੁੱਛੋ", "hint": "ਕੋਈ ਵੀ ਸ਼ੱਕ ਦੂਰ ਕਰੋ" },
+      "focus":     { "title": "ਫ਼ੋਕਸ ਟਾਈਮਰ", "hint": "25/5 ਪੋਮੋਡੋਰੋ" },
       "upload":    { "title": "ਫ਼ਾਈਲ ਅੱਪਲੋਡ", "hint": "PDF, ਫੋਟੋਆਂ" },
       "newQuiz":   { "title": "ਨਵਾਂ ਕੁਇਜ਼", "hint": "AI ਬਣਾਏ" },
       "gradeTest": { "title": "ਟੈਸਟ ਦਰਜਾ ਦਿਓ", "hint": "ਪੇਪਰ ਟੈਸਟ AI" }

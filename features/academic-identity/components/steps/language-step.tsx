@@ -36,7 +36,7 @@ export function LanguageStep({ selectedCode, onSelect, mediumLabel }: LanguageSt
               disabled={!meta.released}
               onClick={() => meta.released && onSelect(meta.code)}
               className={cn(
-                "flex min-h-[64px] w-full items-center gap-4 rounded-lg bg-card p-4 text-left transition-colors",
+                "flex min-h-[52px] w-full items-center gap-3 rounded-lg bg-card px-3 py-2.5 text-left transition-colors",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 selected
                   ? "border-2 border-primary bg-accent"
@@ -44,23 +44,23 @@ export function LanguageStep({ selectedCode, onSelect, mediumLabel }: LanguageSt
                 !meta.released && "cursor-not-allowed opacity-50",
               )}
             >
-              <span aria-hidden className="text-2xl">
+              <span aria-hidden className="text-[18px]">
                 {meta.flag}
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-base font-bold leading-tight">{meta.name}</span>
+                <span className="text-[14.5px] font-bold leading-tight">{meta.name}</span>
                 {!meta.released ? (
-                  <span className="mt-0.5 text-[12.5px] text-muted-foreground">Coming soon</span>
+                  <span className="mt-0.5 text-[11.5px] text-muted-foreground">Coming soon</span>
                 ) : null}
               </span>
               <span
                 aria-hidden
                 className={cn(
-                  "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full transition-colors",
+                  "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full transition-colors",
                   selected ? "bg-primary text-primary-foreground" : "border-2 border-border",
                 )}
               >
-                {selected ? <Check className="h-3.5 w-3.5" strokeWidth={3.2} /> : null}
+                {selected ? <Check className="h-3 w-3" strokeWidth={3.2} /> : null}
               </span>
             </button>
           );

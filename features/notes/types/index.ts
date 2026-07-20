@@ -7,6 +7,7 @@ export type Note = {
   classId: string;
   mediumId: string;
   subjectId: string;
+  chapterId: string | null;
   title: string;
   content: string;
   isBookmarked: boolean;
@@ -21,6 +22,7 @@ export type Note = {
 export type NoteListItem = Note & {
   subjectName: string;
   subjectSlug: string;
+  chapterName?: string | null;
 };
 
 /** Query parameters accepted by `listNotes`. All optional. */

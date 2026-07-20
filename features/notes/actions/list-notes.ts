@@ -86,6 +86,7 @@ export async function listNotes(
       classId: row.class_id,
       mediumId: row.medium_id,
       subjectId: row.subject_id,
+      chapterId: (row as { chapter_id?: string | null }).chapter_id ?? null,
       title: row.title,
       content: row.content,
       isBookmarked: row.is_bookmarked,

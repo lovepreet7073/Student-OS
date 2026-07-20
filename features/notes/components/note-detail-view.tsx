@@ -25,7 +25,10 @@ export function NoteDetailView({ note }: NoteDetailViewProps) {
           </Link>
         </Button>
         <span className="text-[13px] font-bold text-muted-foreground">
-          {note.subjectName} · updated {formatRelativeTime(note.updatedAt)}
+          {note.subjectName}
+          {note.chapterName ? ` · ${note.chapterName}` : ""}
+          {" · "}
+          updated {formatRelativeTime(note.updatedAt)}
         </span>
       </nav>
 
