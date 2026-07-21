@@ -76,6 +76,7 @@
       "tasks": "ਕੰਮ",
       "bookmarks": "ਬੁੱਕਮਾਰਕ",
       "quizzes": "ਕੁਇਜ਼",
+      "flashcards": "ਫਲੈਸ਼ਕਾਰਡ",
       "plan": "ਸਟੱਡੀ ਪਲਾਨ",
       "tests": "ਟੈਸਟ ਦਰਜੇ",
       "community": "ਕਮਿਊਨਿਟੀ",
@@ -87,7 +88,8 @@
       "plan_singular": "ਸਰਗਰਮ ਪਲਾਨ",
       "plan_none": "ਕੋਈ ਸਰਗਰਮ ਪਲਾਨ ਨਹੀਂ",
       "achievements": "ਪ੍ਰਾਪਤੀਆਂ",
-      "badges": "ਬੈਜ"
+      "badges": "ਬੈਜ",
+      "decks": "ਡੈੱਕ"
     },
     "activity": {
       "openedEmpty": {

@@ -76,6 +76,7 @@
       "tasks": "Tasks",
       "bookmarks": "Bookmarks",
       "quizzes": "Quizzes",
+      "flashcards": "Flashcards",
       "plan": "Study plan",
       "tests": "Test evals",
       "community": "Community",
@@ -87,7 +88,8 @@
       "sharedNotes": "shared",
       "plan_singular": "active plan",
       "plan_none": "no active plan",
-      "badges": "badges"
+      "badges": "badges",
+      "decks": "decks"
     },
     "activity": {
       "openedEmpty": {

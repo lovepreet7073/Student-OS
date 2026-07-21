@@ -8,6 +8,7 @@ import {
   ClipboardList,
   FileText,
   GraduationCap,
+  Layers,
   Trophy,
   Users,
 } from "lucide-react";
@@ -76,7 +77,7 @@ export async function CategoryGrid({ overview }: Props) {
     {
       key: "bookmarks",
       icon: Bookmark,
-      href: "/app/notes?bookmarked=1",
+      href: "/app/bookmarks",
       count: overview.bookmarkedNotes,
       unitKey: "bookmarks",
       tone: "info" as const,
@@ -88,6 +89,18 @@ export async function CategoryGrid({ overview }: Props) {
       count: overview.quizzes,
       unitKey: "quizzes",
       tone: "success" as const,
+    },
+    {
+      key: "flashcards",
+      icon: Layers,
+      href: "/app/flashcards",
+      count: overview.flashcardDecks,
+      badge:
+        overview.flashcardsDueToday > 0
+          ? `${overview.flashcardsDueToday} due`
+          : null,
+      unitKey: "decks",
+      tone: "primary" as const,
     },
     {
       key: "plan",

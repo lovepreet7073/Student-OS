@@ -44,6 +44,8 @@ export async function getWorkspaceOverview(): Promise<
     activePlan,
     evaluations,
     community,
+    flashcardDecks,
+    flashcardsDueToday,
   ] = await Promise.all([
     countOf(
       supabase
@@ -129,6 +131,25 @@ export async function getWorkspaceOverview(): Promise<
         error: unknown;
       }>,
     ),
+    countOf(
+      supabase
+        .from("flashcard_decks")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id) as unknown as Promise<{
+        count: number | null;
+        error: unknown;
+      }>,
+    ),
+    countOf(
+      supabase
+        .from("flashcards")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .lte("due_at", endOfToday) as unknown as Promise<{
+        count: number | null;
+        error: unknown;
+      }>,
+    ),
   ]);
 
   return ok({
@@ -140,5 +161,7 @@ export async function getWorkspaceOverview(): Promise<
     studyPlanActive: activePlan,
     testEvaluations: evaluations,
     sharedToCommunity: community,
+    flashcardDecks,
+    flashcardsDueToday,
   });
 }

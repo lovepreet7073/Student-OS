@@ -32,6 +32,7 @@ export async function toggleCommunityBookmark(
       .eq("user_id", user.id);
     if (del.error) return err({ code: "DB", message: "Couldn't remove bookmark." });
     revalidatePath(`/app/community/${communityNoteId}`);
+    revalidatePath("/app/bookmarks");
     return ok({ bookmarked: false });
   }
 
@@ -41,5 +42,6 @@ export async function toggleCommunityBookmark(
   if (ins.error) return err({ code: "DB", message: "Couldn't bookmark." });
 
   revalidatePath(`/app/community/${communityNoteId}`);
+  revalidatePath("/app/bookmarks");
   return ok({ bookmarked: true });
 }

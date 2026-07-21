@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { BarChart3, ShieldCheck } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { ErrorState } from "@/components/shared/error-state";
@@ -31,12 +31,19 @@ export default async function CommunityPage() {
             <p className="mt-0.5 text-[13.5px] text-muted-foreground">{t("description")}</p>
           </div>
           {isTeacher ? (
-            <Button asChild size="sm" className="gap-1.5">
-              <Link href="/app/community/moderation">
-                <ShieldCheck className="h-4 w-4" aria-hidden />
-                {t("moderate")}
-              </Link>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button asChild size="sm" variant="outline" aria-label="Teacher analytics">
+                <Link href="/app/teacher">
+                  <BarChart3 className="h-4 w-4" aria-hidden />
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="gap-1.5">
+                <Link href="/app/community/moderation">
+                  <ShieldCheck className="h-4 w-4" aria-hidden />
+                  {t("moderate")}
+                </Link>
+              </Button>
+            </div>
           ) : null}
         </div>
       </header>

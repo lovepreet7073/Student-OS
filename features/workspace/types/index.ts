@@ -5,7 +5,8 @@ export type WorkspaceEntityType =
   | "quiz"
   | "study_plan"
   | "test_evaluation"
-  | "community_note";
+  | "community_note"
+  | "flashcard_deck";
 
 export type ActivityAction = "opened" | "uploaded" | "created";
 
@@ -28,6 +29,8 @@ export interface WorkspaceOverview {
   studyPlanActive: boolean;
   testEvaluations: number;
   sharedToCommunity: number;
+  flashcardDecks: number;
+  flashcardsDueToday: number;
 }
 
 export interface WorkspaceCategory {

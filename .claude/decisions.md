@@ -4,6 +4,110 @@ Append-only log of architectural decisions. Newest at the top. Every entry: **da
 
 ---
 
+## ADR-0024 · 2026-07-21 · Teacher analytics ships without a new table — attribution lives on `community_notes`
+
+**Decision:** `/app/teacher` (Module 30) reads every metric from existing
+columns — `community_notes.moderated_by`, `moderated_at`, `status`, and
+`author_id`. No new tables, no new indexes, no new triggers.
+
+**Why:**
+1. Every teacher action already writes `moderated_by = teacher_id` and
+   `moderated_at = now()`. That's a complete audit trail without a shadow
+   table.
+2. The primary drill-downs (this week / this month, approve vs reject,
+   per-contributor totals) all reduce to a `WHERE moderated_by = ?` on
+   `community_notes`. Indexes on `(status, created_at)` and
+   `(author_id, created_at)` already exist.
+3. A separate `moderation_events` table would double-write on every action,
+   force us to keep it consistent with the source row on unpublish/reset
+   flows, and add nothing until we want event-level metadata (device,
+   session, latency) — which we don't.
+
+**Trade-off accepted:** The contributor leaderboard groups author rows in
+JavaScript rather than SQL because Supabase JS doesn't expose GROUP BY
+without an RPC. At current scale (a few thousand approved notes per scope
+max) this is a rounding error; we'll swap in a DB view when it stops being.
+
+**Alternatives considered:**
+- New `moderation_events(teacher_id, action, target_id, at)` table —
+  premature; adds a write to every moderation without a use case.
+- Materialised view refreshed hourly — over-engineered for eight queries
+  that already run in ~50ms parallel.
+- A cron-computed stats table — worth revisiting when we want long-tail
+  metrics (median time-to-moderation, cohort comparisons) — not now.
+
+---
+
+## ADR-0023 · 2026-07-21 · Bookmarks storage is split by ownership shape, not centralised
+
+**Decision:** The unified `/app/bookmarks` view (Module 29) reads from three
+different storage shapes:
+
+- `notes.is_bookmarked boolean` (1:1 owner — kept as-is from Module 2)
+- `study_files.is_bookmarked boolean` (1:1 owner — kept as-is from Module 8)
+- `community_bookmarks(user_id, community_note_id)` (many-to-many — new)
+
+A single polymorphic `bookmarks(user_id, entity_type, entity_id)` table was
+rejected.
+
+**Why:**
+1. `notes` and `study_files` rows have a single owner, so a boolean is
+   already a complete, indexable representation. Migrating them into a
+   polymorphic table would delete an existing index (`WHERE
+   is_bookmarked = true`) and add a JOIN to every list query for zero
+   correctness win.
+2. `community_notes` rows are cross-user — one row can be bookmarked by
+   many peers. That's the only shape where a join table is unavoidable.
+3. The unified view is a read concern, not a storage concern. Fan-out at
+   the query layer (three parallel `.select()` calls) is cheap and keeps
+   the storage native to each source.
+
+**Trade-off accepted:** The bookmarks feature's `list-bookmarks` action
+knows about three sources by name. If we add a fourth (e.g. flashcard decks),
+we edit that action. Fine — this is a small, discoverable list, not the
+kind of surface that benefits from open-set polymorphism.
+
+**Alternatives considered:**
+- Polymorphic `bookmarks(user_id, kind, ref_id, at)`: harder RLS
+  (per-kind sub-queries), a lost index on notes/files, and a migration
+  that copies existing boolean state.
+- Boolean everywhere with a per-user community `community_notes_users`
+  side table: same shape as `community_bookmarks`, worse name.
+
+---
+
+## ADR-0022 · 2026-07-21 · Flashcards use SM-2 in-app, not a dedicated scheduling worker
+
+**Decision:** The Module 28 flashcard scheduler runs entirely inside the
+`reviewCard` server action — the SM-2 algorithm is a pure function in
+`features/flashcards/lib/sm2.ts` that computes the next interval and
+`due_at`, and the action persists both. No background job, no cron, no
+message queue.
+
+**Why:**
+1. SM-2 is stateful *per card*, not per user. The next-review timestamp is
+   just another column on the card — no ambient "when to notify" needed.
+2. Reviews happen in bursts (a student sitting down for 20 minutes), which
+   is exactly when we want the write to complete. Deferring to a worker
+   adds latency to what should feel instant.
+3. The `flashcards(user_id, due_at)` index makes the "what's due now?"
+   query trivial. That's all a scheduler needs.
+
+**Trade-off accepted:** No cross-deck "review everything" inbox in v1.
+The current pattern is per-deck: enter deck → review its due cards. A
+cross-deck view is a follow-up (one query across all `flashcards` where
+`user_id = ? AND due_at <= now()`).
+
+**Alternatives considered:**
+- Anki's per-user `deck_options` + full spaced-repetition tuning — over-
+  engineered for MVP; SM-2 with a fixed ease/interval schedule is enough.
+- A background worker that recomputes intervals nightly — pointless when
+  the interval only changes on user input.
+- Client-side scheduling with periodic server sync — offline-first is not
+  a v1 concern; every screen is auth-gated anyway.
+
+---
+
 ## ADR-0021 · 2026-07-18 · Global search is ILIKE-per-table now, `to_tsvector` later
 
 **Decision:** `/app/search` runs four parallel Supabase `.or(title.ilike.%q%, body.ilike.%q%)`

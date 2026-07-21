@@ -41,6 +41,7 @@ export async function toggleBookmark(input: {
 
   revalidatePath("/app/notes");
   revalidatePath(`/app/notes/${parsed.data.id}`);
+  revalidatePath("/app/bookmarks");
 
   return ok({ isBookmarked: data.is_bookmarked });
 }

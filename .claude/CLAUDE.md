@@ -155,6 +155,30 @@ translated in `en` + `pa`. Feature-detail surfaces (tasks, quizzes, planner,
 test evals, moderation, dialogs) still hold English strings — sweep them in
 Module 13.5.
 
+## AI Flashcards + Spaced Repetition
+
+See `flashcards.md` — Module 28. Fourth AI feature; same
+`generateStructured` pattern as quizzes. Introduces **SM-2** as a pure
+function in `features/flashcards/lib/sm2.ts` — the scheduler lives in the
+`reviewCard` action, no background worker (ADR-0022). Cards carry their
+own SM-2 state (`ease_factor`, `interval_days`, `repetition`, `due_at`).
+Two generation paths: `from topic` and `from note` (source-grounded).
+
+## Bookmarks (unified view)
+
+See `bookmarks.md` — Module 29. `/app/bookmarks` folds three sources into
+one tabbed view: `notes.is_bookmarked`, `study_files.is_bookmarked`, and
+the new `community_bookmarks` join table. Storage is split by ownership
+shape — polymorphic bookmarks table was rejected (ADR-0023).
+
+## Teacher Analytics
+
+See `teacher-analytics.md` — Module 30. `/app/teacher` reads every metric
+from existing `community_notes` columns (no new tables — ADR-0024). Scope
+is the teacher's own `(board × class × medium)`. Six KPI cards + top
+contributors leaderboard + last 20 moderation actions. Gated to
+`profile.role === 'teacher'`.
+
 ## Community Notes
 
 See `community.md` — the first social feature. Students share private notes
