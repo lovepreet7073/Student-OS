@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { AskAiBubble } from "./ask-ai-bubble";
 import { DesktopSidebar } from "./desktop-sidebar";
 import { GlobalShortcuts } from "./global-shortcuts";
 import { MobileBottomNav } from "./mobile-bottom-nav";
@@ -26,6 +27,7 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
       <MobileBottomNav />
+      <AskAiBubble />
       <GlobalShortcuts />
     </div>
   );

@@ -11,11 +11,11 @@ export async function QuickActions() {
   const t = await getTranslations("workspace.quickActions");
 
   const actions = [
-    { key: "newNote", icon: Plus,     href: "/app/notes/new", tone: "primary" as const },
-    { key: "askAi",   icon: Brain,    href: "/app/doubt",     tone: "brand"   as const },
-    { key: "focus",   icon: Timer,    href: "/app/focus",     tone: "warning" as const },
-    { key: "newQuiz", icon: Sparkles, href: "/app/study/new", tone: "success" as const },
-    { key: "upload",  icon: Upload,   href: "/app/library",   tone: "danger"  as const },
+    { key: "newNote", icon: Plus,     href: "/app/notes/new",       tone: "primary" as const },
+    { key: "askAi",   icon: Brain,    href: "/app/chat/new",        tone: "brand"   as const },
+    { key: "focus",   icon: Timer,    href: "/app/focus",           tone: "warning" as const },
+    { key: "newQuiz", icon: Sparkles, href: "/app/study/new",       tone: "success" as const },
+    { key: "upload",  icon: Upload,   href: "/app/notes?view=files", tone: "danger" as const },
   ];
 
   const TONES = {
