@@ -7,24 +7,34 @@ import { ErrorState } from "@/components/shared/error-state";
 import { Button } from "@/components/ui/button";
 import { getMyProfile } from "@/features/academic-identity/actions/get-my-profile";
 import { getWorkspaceOverview } from "@/features/workspace/actions/get-workspace-overview";
-import { listRecentActivity } from "@/features/workspace/actions/list-recent-activity";
 import { CategoryGrid } from "@/features/workspace/components/category-grid";
 import { QuickActions } from "@/features/workspace/components/quick-actions";
-import { RecentActivityList } from "@/features/workspace/components/recent-activity-list";
 
 export const metadata: Metadata = { title: "Workspace" };
 
+/**
+ * Workspace — the browsable directory of every content type. It is
+ * NOT "what to do now" — that's Today's job. It is NOT "current
+ * activity" — Today's <ContinueCard> covers that. Workspace's job
+ * post-redesign is simple: help a student find a feature they know
+ * exists but can't remember the name of.
+ *
+ * Module 63 killed the "Recently opened" and "Recently uploaded"
+ * sections — both were duplicated by the new <ContinueCard> on Today,
+ * where they belong (the "one page a student opens at 9 PM").
+ * Workspace is now three things top-to-bottom: quick actions, the
+ * intent-grouped category grid, and search.
+ */
 export default async function WorkspacePage() {
-  const [profile, overview, opened, uploaded, t] = await Promise.all([
+  const [profile, overview, t] = await Promise.all([
     getMyProfile(),
     getWorkspaceOverview(),
-    listRecentActivity({ action: "opened", limit: 6 }),
-    listRecentActivity({ action: "uploaded", limit: 6 }),
     getTranslations("workspace"),
   ]);
   if (!profile) return null;
 
-  const firstName = profile.displayName.trim().split(/\s+/)[0] ?? profile.displayName;
+  const firstName =
+    profile.displayName.trim().split(/\s+/)[0] ?? profile.displayName;
 
   return (
     <div className="mx-auto max-w-[780px] px-5 pb-10 sm:px-7 lg:max-w-[1140px] lg:px-11">
@@ -68,31 +78,12 @@ export default async function WorkspacePage() {
           </p>
         </div>
         {!overview.ok ? (
-          <ErrorState title={t("errors.overview")} description={overview.error.message} />
+          <ErrorState
+            title={t("errors.overview")}
+            description={overview.error.message}
+          />
         ) : (
           <CategoryGrid overview={overview.data} />
-        )}
-      </section>
-
-      <section aria-label={t("recentOpenedLabel")} className="pt-8">
-        <h2 className="mb-3 text-[15px] font-extrabold tracking-tight">
-          {t("recentOpenedLabel")}
-        </h2>
-        {!opened.ok ? (
-          <ErrorState title={t("errors.activity")} description={opened.error.message} />
-        ) : (
-          <RecentActivityList events={opened.data} emptyKey="opened" />
-        )}
-      </section>
-
-      <section aria-label={t("recentUploadedLabel")} className="pt-8">
-        <h2 className="mb-3 text-[15px] font-extrabold tracking-tight">
-          {t("recentUploadedLabel")}
-        </h2>
-        {!uploaded.ok ? (
-          <ErrorState title={t("errors.activity")} description={uploaded.error.message} />
-        ) : (
-          <RecentActivityList events={uploaded.data} emptyKey="uploaded" />
         )}
       </section>
     </div>
