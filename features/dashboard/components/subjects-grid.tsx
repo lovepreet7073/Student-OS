@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import type { Subject } from "@/features/academic-identity/types";
-import { cn } from "@/lib/utils";
 
 interface SubjectsGridProps {
   subjects: Subject[];
@@ -58,7 +57,10 @@ function SubjectCard({
   tone: { color: string; tint: string };
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4">
+    <Link
+      href={`/app/notes?subject=${subject.id}`}
+      className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
       <div className="flex items-center justify-between">
         <span
           className="flex h-9 w-9 items-center justify-center rounded-md text-[15px] font-extrabold"
@@ -74,10 +76,10 @@ function SubjectCard({
           {subject.name}
         </div>
         <div className="mt-0.5 text-[12.5px] text-muted-foreground/80">
-          0 notes · 0%
+          Open notes
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

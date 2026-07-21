@@ -6,6 +6,7 @@ import { GetStartedChecklist } from "@/features/dashboard/components/get-started
 import { GreetingHeader } from "@/features/dashboard/components/greeting-header";
 import { PracticeDueCard } from "@/features/dashboard/components/practice-due-card";
 import { StreakCard } from "@/features/dashboard/components/streak-card";
+import { SubjectStrip } from "@/features/dashboard/components/subject-strip";
 import { SubjectsGrid } from "@/features/dashboard/components/subjects-grid";
 import { TodaysPlan } from "@/features/dashboard/components/todays-plan";
 import { TodaysSessions } from "@/features/dashboard/components/todays-sessions";
@@ -42,6 +43,10 @@ export default async function TodayPage() {
         displayName={profile.displayName}
         streakDays={streak?.current ?? 0}
       />
+
+      <div className="mt-2 lg:hidden">
+        <SubjectStrip subjects={profile.subjects} />
+      </div>
 
       <div className="flex flex-col gap-5 pt-4 sm:gap-6 sm:pt-6">
         <GetStartedChecklist />

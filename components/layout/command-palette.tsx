@@ -187,26 +187,66 @@ export function CommandPalette() {
     [router],
   );
 
-  // Global ⌘K / Ctrl+K listener — replaces the earlier navigate-to-search
-  // behaviour from Module 56.
+  // Global keyboard shortcuts (Module 66). Cmd/Ctrl+K toggles the
+  // palette; the rest jump straight to a route without opening the
+  // palette. Each shortcut is a one-key deep-link power students will
+  // internalise after ~1 week of daily use.
+  //
+  // We do NOT intercept when the user is typing in an editable field
+  // (input/textarea/contenteditable) unless it's a native search input
+  // — a chat composer that eats "N" would be broken. The palette
+  // exception is Cmd/Ctrl+K itself, which is universally the "escape
+  // to search" key across every modern app.
   useEffect(() => {
+    function isEditableTarget(target: EventTarget | null): boolean {
+      const el = target as HTMLElement | null;
+      if (!el) return false;
+      if (el instanceof HTMLTextAreaElement) return true;
+      if (el instanceof HTMLInputElement) {
+        // Native search inputs should keep their own shortcuts.
+        return el.type !== "search";
+      }
+      if (el.isContentEditable) return true;
+      return false;
+    }
+
     function onKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        // Only intercept if not typing in a native search input.
-        const target = e.target as HTMLElement | null;
-        if (
-          target instanceof HTMLInputElement &&
-          target.type === "search"
-        ) {
-          return;
-        }
+      const meta = e.metaKey || e.ctrlKey;
+      if (!meta) return;
+
+      const key = e.key.toLowerCase();
+
+      // Palette toggle — the one shortcut allowed to fire even from an
+      // editable field.
+      if (key === "k") {
+        const el = e.target as HTMLElement | null;
+        if (el instanceof HTMLInputElement && el.type === "search") return;
         e.preventDefault();
         setOpen((v) => !v);
+        return;
       }
+
+      // Every other shortcut is silenced while the user is editing.
+      if (isEditableTarget(e.target)) return;
+
+      const map: Record<string, string> = {
+        n: "/app/notes/new",
+        "/": "/app/chat/new",
+        l: "/app/notes",
+        p: "/app/practice",
+        t: "/app/tasks",
+        h: "/app/help",
+        ",": "/app/profile",
+      };
+
+      const href = map[key];
+      if (!href) return;
+      e.preventDefault();
+      router.push(href);
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [router]);
 
   function onInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
@@ -334,26 +374,50 @@ export function CommandPalette() {
             )}
           </div>
 
-          <div className="flex items-center justify-between border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
-            <span>
-              <kbd className="mr-1 rounded bg-muted px-1 py-0.5 text-[10px] font-bold">
-                ↑↓
-              </kbd>
-              navigate
-              <kbd className="mx-1 rounded bg-muted px-1 py-0.5 text-[10px] font-bold">
-                ↵
-              </kbd>
-              open
-            </span>
-            <span>
-              <kbd className="rounded bg-muted px-1 py-0.5 text-[10px] font-bold">
-                ⌘K
-              </kbd>{" "}
-              toggle
-            </span>
+          <div className="flex flex-col gap-1 border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
+            <div className="flex items-center justify-between gap-3">
+              <span>
+                <kbd className="mr-1 rounded bg-muted px-1 py-0.5 text-[10px] font-bold">
+                  ↑↓
+                </kbd>
+                navigate
+                <kbd className="mx-1 rounded bg-muted px-1 py-0.5 text-[10px] font-bold">
+                  ↵
+                </kbd>
+                open
+              </span>
+              <span>
+                <kbd className="rounded bg-muted px-1 py-0.5 text-[10px] font-bold">
+                  ⌘K
+                </kbd>{" "}
+                toggle
+              </span>
+            </div>
+            <div
+              className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px]"
+              aria-label="Global shortcuts"
+            >
+              <ShortcutHint keys="⌘N" label="New note" />
+              <ShortcutHint keys="⌘/" label="Ask AI" />
+              <ShortcutHint keys="⌘L" label="Library" />
+              <ShortcutHint keys="⌘P" label="Practice" />
+              <ShortcutHint keys="⌘T" label="Tasks" />
+              <ShortcutHint keys="⌘H" label="Helper" />
+            </div>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
+  );
+}
+
+function ShortcutHint({ keys, label }: { keys: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 whitespace-nowrap">
+      <kbd className="rounded bg-muted px-1 py-0.5 text-[10px] font-bold">
+        {keys}
+      </kbd>
+      <span>{label}</span>
+    </span>
   );
 }
