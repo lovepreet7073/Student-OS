@@ -164,6 +164,24 @@ stream); one-shot mutations (create, delete) stay Server Actions. Uses
 new `getGeminiChatModel()` helper (prose output, no `application/json`).
 See ADR-0026 for why the API route is the right exception.
 
+## StudyOS Helper (in-app chatbot)
+
+See `help.md` — Module 55. A SEPARATE chatbot at `/app/help` for
+product-usage questions ("how do I make flashcards?"). Same Gemini
+streaming pattern as `/api/chat` but transient (no DB persistence)
+and gated to the app's feature inventory in
+`lib/gemini/prompts/help.ts`. Redirects subject/homework questions
+back to `/app/chat` in its system prompt.
+
+## Navigation IA
+
+See `navigation.md` — Module 56. Three tiers: (1) 5-item primary
+nav (constitutional, mobile+desktop), (2) desktop-only Shortcuts
+block for every remaining content type (ADR-0029), (3) Workspace
+tiles grouped by intent (Study material / Practice / Plan /
+Progress) with descriptive subtitles so students find features by
+goal not by name.
+
 ## AI Flashcards + Spaced Repetition
 
 See `flashcards.md` — Module 28. Fourth AI feature; same

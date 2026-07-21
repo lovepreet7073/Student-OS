@@ -51,8 +51,21 @@ export default async function WorkspacePage() {
       </section>
 
       <section aria-label={t("categoriesLabel")} className="pt-8">
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-[15px] font-extrabold tracking-tight">{t("categoriesLabel")}</h2>
+        <div className="mb-4">
+          <h2 className="text-[15px] font-extrabold tracking-tight">
+            {t("categoriesLabel")}
+          </h2>
+          <p className="mt-0.5 text-[12.5px] text-muted-foreground">
+            Grouped by what you&apos;re trying to do. Not sure where
+            something lives?{" "}
+            <Link
+              href="/app/help"
+              className="font-bold text-primary underline underline-offset-2"
+            >
+              Ask the Helper
+            </Link>
+            .
+          </p>
         </div>
         {!overview.ok ? (
           <ErrorState title={t("errors.overview")} description={overview.error.message} />

@@ -78,7 +78,23 @@ export async function getCalendarAgenda(
   ]);
 
   if (examsRes.error || tasksRes.error || sessionsRes.error) {
-    return err({ code: "DB", message: "Couldn't load your calendar." });
+    // Report which query failed so a missing migration or schema drift is
+    // obvious. Prefix each failure with its source so multiple failures
+    // (rare) still surface individually in the toast.
+    const parts: string[] = [];
+    if (examsRes.error) parts.push(`exams (${examsRes.error.message})`);
+    if (tasksRes.error) parts.push(`tasks (${tasksRes.error.message})`);
+    if (sessionsRes.error)
+      parts.push(`sessions (${sessionsRes.error.message})`);
+    console.error("[calendar] one or more sources failed:", {
+      exams: examsRes.error,
+      tasks: tasksRes.error,
+      sessions: sessionsRes.error,
+    });
+    return err({
+      code: "DB",
+      message: `Calendar sources failed: ${parts.join("; ")}`,
+    });
   }
 
   // Bucket per-date.

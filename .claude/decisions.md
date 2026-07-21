@@ -4,6 +4,43 @@ Append-only log of architectural decisions. Newest at the top. Every entry: **da
 
 ---
 
+## ADR-0029 · 2026-07-21 · Desktop-only secondary nav; mobile stays at 5 items
+
+**Decision:** The desktop sidebar (Module 56) renders a second
+"Shortcuts" navigation block below the constitutional 5-item primary
+nav. This surfaces every remaining content type (Files, Tasks, Quizzes,
+Flashcards, Chat, Planner, Tests, Syllabus, Calendar, Focus,
+Achievements, Helper) as a flat labeled list. Mobile does NOT get a
+secondary drawer or "More" tab — its bottom nav stays at 5.
+
+**Why:**
+1. The 5-item constitutional cap (ADR-0006, `mobile-first.md`) was
+   written for thumb-reach on a budget Android phone. Desktop users
+   have a mouse and 800px of vertical sidebar to spare; capping them
+   at 5 destinations forces them to funnel through Workspace for
+   trivial navigations.
+2. Every shortcut entry maps to an existing route. This is pure
+   discoverability plumbing — no new pages, no new state, no new
+   permissions.
+3. On mobile, the Workspace tile IS the "More" tray. Adding a second
+   overlay ("bottom nav → More → grid") duplicates that role and
+   confuses first-time students.
+
+**Trade-off accepted:** the shortcut list on desktop can get long as
+more features ship. We addressed this with `overflow-y-auto` on the
+sidebar's inner container — the shortcuts scroll while the primary
+5-nav and the user card stay pinned.
+
+**Alternatives considered:**
+- **Add features to the primary 5**: breaks the constitutional cap
+  and hurts mobile ergonomics for a desktop-only win.
+- **A "More" drawer on mobile**: doubles the depth of every non-primary
+  navigation vs the current Workspace pattern.
+- **Search-only discovery**: works for power users but fails
+  first-timers who don't know the feature exists to search for.
+
+---
+
 ## ADR-0028 · 2026-07-21 · Chat edit/regenerate reuses `/api/chat` via a `mode` flag
 
 **Decision:** The Module 43 edit and regenerate flows do not introduce

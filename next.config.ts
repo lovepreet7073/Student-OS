@@ -27,9 +27,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Re-enable typedRoutes once the auth + dashboard routes stabilise. In
+  // Next 15 this key moved out of `experimental` — keeping it at the top
+  // level silences the dev-server warning about the legacy location.
+  typedRoutes: false,
+  turbopack: {},
   experimental: {
-    // Re-enable typedRoutes once the auth + dashboard routes ship in later modules.
-    typedRoutes: false,
     serverActions: {
       bodySizeLimit: "2mb",
     },
