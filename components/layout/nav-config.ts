@@ -49,6 +49,18 @@ export const APP_NAV_ITEMS: readonly NavItem[] = [
 ] as const;
 
 /**
+ * Given a pathname, returns the key of the primary nav item that should
+ * be highlighted. Prefix match so nested routes (e.g. `/app/notes/123`)
+ * still highlight `notes`.
+ */
+export function activeNavKey(pathname: string): string | null {
+  const item = APP_NAV_ITEMS.find(
+    (n) => pathname === n.href || pathname.startsWith(`${n.href}/`),
+  );
+  return item?.key ?? null;
+}
+
+/**
  * Secondary sidebar shortcuts (desktop-only, ADR-0029). These are NOT
  * primary destinations — the mobile bottom nav stays locked at 5 items.
  * On desktop they surface under a "Shortcuts" heading so students can
