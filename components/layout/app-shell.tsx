@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
 import { AskAiBubble } from "./ask-ai-bubble";
+import { CommandPalette } from "./command-palette";
 import { DesktopSidebar } from "./desktop-sidebar";
-import { GlobalShortcuts } from "./global-shortcuts";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 
 interface AppShellProps {
@@ -28,7 +28,7 @@ export function AppShell({ children }: AppShellProps) {
       </main>
       <MobileBottomNav />
       <AskAiBubble />
-      <GlobalShortcuts />
+      <CommandPalette />
     </div>
   );
 }
