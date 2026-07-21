@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { ContinueCard } from "@/features/dashboard/components/continue-card";
 import { Fab } from "@/features/dashboard/components/fab";
 import { GreetingHeader } from "@/features/dashboard/components/greeting-header";
 import { PracticeDueCard } from "@/features/dashboard/components/practice-due-card";
@@ -19,12 +20,9 @@ export const metadata: Metadata = { title: "Today" };
  *
  * Order matters. Each section either shows real work or hides itself.
  * A brand-new student sees: greeting → streak → subjects. A returning
- * student adds: exams → practice due → tasks → sessions. Nothing on
- * this page is decoration; every card answers "what should I do now?"
- *
- * The old ContinueHero was removed because it was hardcoded ("Welcome,
- * $name") — a real Continue needs a `recently_opened` query. That's a
- * follow-up when we wire the activity feed into a proper "resume" card.
+ * student adds: continue → exams → practice due → tasks → sessions.
+ * Nothing on this page is decoration; every card answers "what should
+ * I do now?"
  */
 export default async function TodayPage() {
   const [profile, streakResult, examsResult] = await Promise.all([
@@ -46,6 +44,8 @@ export default async function TodayPage() {
 
       <div className="flex flex-col gap-5 pt-4 sm:gap-6 sm:pt-6">
         {streak ? <StreakCard stats={streak} /> : null}
+
+        <ContinueCard />
 
         <ExamCountdownCard exams={exams} subjects={profile.subjects} />
 

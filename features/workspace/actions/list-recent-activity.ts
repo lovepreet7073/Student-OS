@@ -18,6 +18,7 @@ const ENTITY_TYPES = new Set<WorkspaceEntityType>([
   "study_plan",
   "test_evaluation",
   "community_note",
+  "flashcard_deck",
 ]);
 
 const ACTIONS = new Set<ActivityAction>(["opened", "uploaded", "created"]);
