@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, Sparkles, Trash2, User2 } from "lucide-react";
+import { ArrowLeft, ImagePlus, Send, Sparkles, Trash2, User2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,17 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
+import type { Subject } from "@/features/academic-identity/types";
+
+import { beginAttachmentUpload } from "../actions/begin-attachment-upload";
 import { deleteConversation } from "../actions/delete-conversation";
-import type { ChatConversationWithMessages, ChatMessage } from "../types";
+import { AttachmentThumb } from "./attachment-thumb";
+import { SaveAsNoteButton } from "./save-as-note-button";
+import type { ChatAttachment, ChatConversationWithMessages, ChatMessage } from "../types";
 
 interface Props {
   conversation: ChatConversationWithMessages;
+  subjects: Subject[];
 }
 
 /**
@@ -43,7 +49,7 @@ interface Props {
  * the first assistant response so the student doesn't have to hit "Send"
  * on their own opening message.
  */
-export function ChatView({ conversation }: Props) {
+export function ChatView({ conversation, subjects }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const shouldAutoStart = searchParams.get("auto") === "1";
@@ -55,9 +61,24 @@ export function ChatView({ conversation }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
+  // One attachment per outgoing message (v1). `pending` holds the picked
+  // file + a local preview URL until it's either uploaded or discarded.
+  const [attachment, setAttachment] = useState<{
+    file: File;
+    previewUrl: string;
+  } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoTriggeredRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (attachment) URL.revokeObjectURL(attachment.previewUrl);
+    };
+  }, [attachment]);
 
   const scrollToBottom = useCallback(() => {
     const el = scrollRef.current;
@@ -70,7 +91,7 @@ export function ChatView({ conversation }: Props) {
   }, [messages, pending, scrollToBottom]);
 
   const streamAssistant = useCallback(
-    async (message: string) => {
+    async (message: string, attachments?: ChatAttachment[]) => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -84,6 +105,7 @@ export function ChatView({ conversation }: Props) {
           body: JSON.stringify({
             conversationId: conversation.id,
             message,
+            attachments,
           }),
           signal: controller.signal,
         });
@@ -129,9 +151,68 @@ export function ChatView({ conversation }: Props) {
     void streamAssistant(first.content);
   }, [shouldAutoStart, messages, streamAssistant]);
 
+  function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image is larger than 10 MB.");
+      return;
+    }
+    if (attachment) URL.revokeObjectURL(attachment.previewUrl);
+    setAttachment({ file, previewUrl: URL.createObjectURL(file) });
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function onClearAttachment() {
+    if (attachment) URL.revokeObjectURL(attachment.previewUrl);
+    setAttachment(null);
+  }
+
+  async function uploadAttachment(): Promise<ChatAttachment | null> {
+    if (!attachment) return null;
+    setUploading(true);
+    try {
+      const mimeType = attachment.file.type;
+      const begin = await beginAttachmentUpload({
+        conversationId: conversation.id,
+        mimeType,
+      });
+      if (!begin.ok) {
+        toast.error(begin.error.message);
+        return null;
+      }
+      const putRes = await fetch(begin.data.uploadUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": mimeType,
+          "x-upsert": "false",
+        },
+        body: attachment.file,
+      });
+      if (!putRes.ok) {
+        toast.error("Upload failed. Try again.");
+        return null;
+      }
+      return { path: begin.data.path, mimeType };
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function onSend() {
+    if (status === "streaming" || uploading) return;
     const trimmed = inputValue.trim();
-    if (trimmed.length === 0 || status === "streaming") return;
+    const hasAttachment = attachment !== null;
+    if (trimmed.length === 0 && !hasAttachment) return;
+
+    let uploadedAttachments: ChatAttachment[] | undefined;
+    if (hasAttachment) {
+      const uploaded = await uploadAttachment();
+      if (!uploaded) return;
+      uploadedAttachments = [uploaded];
+      onClearAttachment();
+    }
+
     setInputValue("");
     // Optimistic append of the user's message.
     setMessages((prev) => [
@@ -141,10 +222,11 @@ export function ChatView({ conversation }: Props) {
         conversationId: conversation.id,
         role: "user",
         content: trimmed,
+        attachments: uploadedAttachments ?? [],
         createdAt: new Date().toISOString(),
       },
     ]);
-    await streamAssistant(trimmed);
+    await streamAssistant(trimmed, uploadedAttachments);
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -207,7 +289,15 @@ export function ChatView({ conversation }: Props) {
           </p>
         ) : null}
         {messages.map((m) => (
-          <MessageBubble key={m.id} role={m.role} content={m.content} />
+          <MessageBubble
+            key={m.id}
+            role={m.role}
+            content={m.content}
+            attachments={m.attachments}
+            messageId={m.id.startsWith("local-") ? undefined : m.id}
+            subjects={subjects}
+            defaultSubjectId={conversation.subjectId}
+          />
         ))}
         {status === "streaming" ? (
           <MessageBubble
@@ -219,7 +309,51 @@ export function ChatView({ conversation }: Props) {
       </div>
 
       <div className="mt-3 pb-[env(safe-area-inset-bottom)]">
+        {attachment ? (
+          <div className="mb-2 flex items-start gap-2 rounded-lg border border-border bg-card p-2">
+            {/* Local preview only — never persisted to the DOM after send. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={attachment.previewUrl}
+              alt="Attachment preview"
+              className="h-16 w-16 rounded-md object-cover"
+            />
+            <div className="flex flex-1 flex-col gap-0.5 text-[12px]">
+              <span className="truncate font-bold">{attachment.file.name}</span>
+              <span className="text-muted-foreground">
+                {(attachment.file.size / 1024).toFixed(0)} KB · will be sent to AI
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onClearAttachment}
+              aria-label="Remove attachment"
+              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <X className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
+        ) : null}
         <div className="flex items-end gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            className="sr-only"
+            onChange={onPickImage}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Attach image"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={
+              status === "streaming" || uploading || attachment !== null
+            }
+          >
+            <ImagePlus className="h-4 w-4" aria-hidden />
+          </Button>
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -227,23 +361,28 @@ export function ChatView({ conversation }: Props) {
             placeholder={
               status === "streaming"
                 ? "Waiting for AI…"
-                : "Ask anything. Shift+Enter for a new line."
+                : attachment
+                  ? "Add a question about this image (optional)…"
+                  : "Ask anything. Shift+Enter for a new line."
             }
             rows={2}
             enterKeyHint="send"
             className="min-h-[52px] resize-none"
-            disabled={status === "streaming"}
+            disabled={status === "streaming" || uploading}
           />
           <Button
             type="button"
             size="lg"
             onClick={onSend}
+            loading={uploading}
             disabled={
-              status === "streaming" || inputValue.trim().length === 0
+              status === "streaming" ||
+              uploading ||
+              (inputValue.trim().length === 0 && attachment === null)
             }
             aria-label="Send message"
           >
-            <Send className="h-4 w-4" aria-hidden />
+            {!uploading ? <Send className="h-4 w-4" aria-hidden /> : null}
           </Button>
         </div>
       </div>
@@ -272,13 +411,30 @@ export function ChatView({ conversation }: Props) {
 function MessageBubble({
   role,
   content,
+  attachments,
   pending,
+  messageId,
+  subjects,
+  defaultSubjectId,
 }: {
   role: "user" | "assistant";
   content: string;
+  attachments?: ChatAttachment[];
   pending?: boolean;
+  messageId?: string;
+  subjects?: Subject[];
+  defaultSubjectId?: string | null;
 }) {
   const isUser = role === "user";
+  const canSave =
+    !isUser &&
+    !pending &&
+    messageId &&
+    subjects &&
+    subjects.length > 0 &&
+    content.trim().length > 0;
+  const hasContent = content.trim().length > 0;
+  const hasAttachments = attachments && attachments.length > 0;
   return (
     <div className={cn("flex gap-2", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
@@ -289,16 +445,36 @@ function MessageBubble({
           <Sparkles className="h-4 w-4" strokeWidth={2} />
         </span>
       ) : null}
-      <div
-        className={cn(
-          "max-w-[75%] rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed",
-          isUser
-            ? "rounded-br-sm bg-primary text-primary-foreground"
-            : "rounded-bl-sm bg-secondary text-foreground",
-          pending && "animate-pulse",
-        )}
-      >
-        <p className="whitespace-pre-wrap break-words">{content}</p>
+      <div className="flex max-w-[75%] flex-col gap-1">
+        {hasAttachments ? (
+          <div className={cn("flex flex-col gap-1", isUser ? "items-end" : "items-start")}>
+            {attachments.map((a) => (
+              <AttachmentThumb key={a.path} attachment={a} />
+            ))}
+          </div>
+        ) : null}
+        {hasContent || pending ? (
+          <div
+            className={cn(
+              "rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed",
+              isUser
+                ? "rounded-br-sm bg-primary text-primary-foreground"
+                : "rounded-bl-sm bg-secondary text-foreground",
+              pending && "animate-pulse",
+            )}
+          >
+            <p className="whitespace-pre-wrap break-words">{content}</p>
+          </div>
+        ) : null}
+        {canSave ? (
+          <div className="flex justify-start">
+            <SaveAsNoteButton
+              messageId={messageId}
+              subjects={subjects}
+              defaultSubjectId={defaultSubjectId ?? null}
+            />
+          </div>
+        ) : null}
       </div>
       {isUser ? (
         <span

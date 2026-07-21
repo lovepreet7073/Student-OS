@@ -1,10 +1,16 @@
 export type ChatRole = "user" | "assistant";
 
+export interface ChatAttachment {
+  path: string;
+  mimeType: string;
+}
+
 export interface ChatMessage {
   id: string;
   conversationId: string;
   role: ChatRole;
   content: string;
+  attachments: ChatAttachment[];
   createdAt: string;
 }
 

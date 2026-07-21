@@ -7,6 +7,7 @@ import { formatRelativeTime } from "@/lib/format-date";
 
 import type { NoteListItem } from "../types";
 import { AiActionsMenu } from "./ai-actions-menu";
+import { AskAiButton } from "./ask-ai-button";
 import { BookmarkToggleButton } from "./bookmark-toggle-button";
 import { DeleteNoteDialog } from "./delete-note-dialog";
 import { MakeFlashcardsButton } from "./make-flashcards-button";
@@ -54,6 +55,7 @@ export function NoteDetailView({ note }: NoteDetailViewProps) {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <AiActionsMenu noteId={note.id} />
+          <AskAiButton noteId={note.id} />
           <MakeFlashcardsButton
             noteId={note.id}
             subjectId={note.subjectId}

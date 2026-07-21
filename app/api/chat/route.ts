@@ -77,17 +77,37 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
+  const attachmentsForDb = (parsed.data.attachments ?? []).map((a) => ({
+    path: a.path,
+    mime_type: a.mimeType,
+  }));
+
   const { error: insertUserErr } = await supabase.from("chat_messages").insert({
     conversation_id: conv.id,
     user_id: user.id,
     role: "user",
     content: parsed.data.message,
+    attachments: attachmentsForDb,
   });
   if (insertUserErr) {
     return NextResponse.json(
       { error: "Couldn't save your message" },
       { status: 500 },
     );
+  }
+
+  // Load current-turn attachments as base64 for Gemini Vision. Only the
+  // NEW message's attachments are forwarded — re-sending prior images
+  // every turn would blow up the token budget. If a student needs to
+  // reference an earlier image, they can re-attach it.
+  const inlineImages: Array<{ mimeType: string; data: string }> = [];
+  for (const a of parsed.data.attachments ?? []) {
+    const { data: blob, error: dlErr } = await supabase.storage
+      .from("chat-attachments")
+      .download(a.path);
+    if (dlErr || !blob) continue;
+    const buf = Buffer.from(await blob.arrayBuffer());
+    inlineImages.push({ mimeType: a.mimeType, data: buf.toString("base64") });
   }
 
   const subject = Array.isArray(conv.subject) ? conv.subject[0] : conv.subject;
@@ -114,10 +134,29 @@ export async function POST(request: Request): Promise<Response> {
   const encoder = new TextEncoder();
   let fullText = "";
 
+  // Compose the current message's parts. Gemini expects either a plain
+  // string OR an array of `Part`s. When there's an image, we must send
+  // an array with `inlineData` first (Vision guideline) followed by the
+  // text prompt.
+  const messageParts =
+    inlineImages.length > 0
+      ? [
+          ...inlineImages.map((img) => ({
+            inlineData: { mimeType: img.mimeType, data: img.data },
+          })),
+          {
+            text:
+              parsed.data.message.trim().length > 0
+                ? parsed.data.message
+                : "Please look at this image and help me understand it.",
+          },
+        ]
+      : parsed.data.message;
+
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const result = await chat.sendMessageStream(parsed.data.message);
+        const result = await chat.sendMessageStream(messageParts as never);
         for await (const chunk of result.stream) {
           const text = chunk.text();
           if (text) {

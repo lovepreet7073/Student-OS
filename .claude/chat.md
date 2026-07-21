@@ -82,11 +82,51 @@ help:
 
 Not in the 5-item nav. Discoverable via a Workspace tile.
 
+## Save-as-note (Module 40)
+
+Every persisted assistant bubble carries a small `<SaveAsNoteButton>`
+that opens a subject picker; on confirm, `saveMessageAsNote({ messageId,
+subjectId })` inserts a note prefixed with `From your AI Study Chat:`
+and returns the new note id so the dialog offers a direct link to it.
+Only rows with `role='assistant'` and non-empty content are eligible.
+
+## Vision chat (Module 41)
+
+`chat_messages` gains an `attachments jsonb` column; a new
+`chat-attachments` Storage bucket (10 MB max, PNG/JPEG/WEBP) holds the
+image bytes under `{user_id}/{conversation_id}/{uuid}.{ext}`. Flow:
+
+1. Client picks image → `beginAttachmentUpload` returns a signed upload
+   URL (bytes never touch our server — same pattern as the study-space
+   module).
+2. Client PUTs the file directly to Supabase Storage.
+3. Client posts `{ conversationId, message, attachments: [{ path,
+   mimeType }] }` to `/api/chat`.
+4. The API route downloads each attachment from Storage as base64 and
+   forwards it as an `inlineData` part to `getGeminiChatModel()`.
+5. Only the CURRENT turn's attachments are forwarded — prior images
+   aren't re-sent (token-budget win; students can re-attach if
+   needed).
+6. Rendering fetches a short-lived signed URL client-side on mount
+   via `getAttachmentUrl(path)` — RLS on `storage.objects` gates who
+   can mint the URL.
+
+Empty text is allowed when an image is attached — the API route
+substitutes a stock "please look at this image" prompt.
+
+## Ask-AI-about-this-note (Module 42)
+
+`<AskAiButton>` on the note detail calls `startChatFromNote(noteId)`:
+the action reads the note (RLS-gated), creates a conversation scoped
+to the note's subject, seeds it with an opening user message
+containing up to 3500 chars of note content plus an instruction to
+"ask me a question to check I've understood", and `redirect()`s to
+`/app/chat/{id}?auto=1` — the same `?auto=1` handshake as
+`<NewChatForm>` so the assistant auto-answers.
+
 ## What this module does NOT do
 
 - **Message editing / regeneration** — no "regenerate this reply" button.
-- **Attachments (images, PDFs)** — text-only for v1. Vision chat is a
-  future extension: same infra, add `inline_data` parts to the request.
 - **Rate limiting** — deferred until we see abuse. Slot into the
   API route header logic when needed.
 - **Conversation naming** — one-shot auto-title from the first message.
@@ -94,15 +134,22 @@ Not in the 5-item nav. Discoverable via a Workspace tile.
 - **Voice input** — deferred.
 - **Web search grounding** — Gemini's `googleSearchRetrieval` tool is
   out of scope; the assistant answers from its own training only.
+- **Multi-image attachments** — one image per message in v1. Schema
+  allows an array but the client picker is single-file.
+- **Re-sending prior attachments in history** — turn-local only, per
+  the token-budget note above.
 
 ## Enhancement ideas
 
-1. **Save-as-note** — one-click "save this reply as a note" using the
-   existing notes create action.
-2. **Message editing** — edit a user message → truncate messages after
+1. **Message editing** — edit a user message → truncate messages after
    it → regenerate.
-3. **Voice input** — Web Speech API → `POST /api/chat` unchanged.
-4. **Vision-enabled chat** — accept image attachments via the same
-   `inlineData` pattern the test evaluation feature uses.
+2. **Voice input** — Web Speech API → `POST /api/chat` unchanged.
+3. **PDF attachments** — same `inlineData` path; add `application/pdf`
+   to the bucket allowlist and the schema.
+4. **Multi-image messages** — expand the client picker to accept up to
+   4 images; the API route already loops.
 5. **Conversation folders** — group chats by topic when the list gets
    long.
+6. **Continue-chat-in-note** — reverse of Module 42: when a chat
+   surfaces a keeper explanation, one-click convert the whole
+   conversation into a note.

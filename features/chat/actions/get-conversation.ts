@@ -21,7 +21,7 @@ export async function getConversation(
       .maybeSingle(),
     supabase
       .from("chat_messages")
-      .select("id, conversation_id, role, content, created_at")
+      .select("id, conversation_id, role, content, attachments, created_at")
       .eq("conversation_id", id)
       .order("created_at", { ascending: true }),
   ]);
@@ -46,6 +46,14 @@ export async function getConversation(
       conversationId: m.conversation_id,
       role: m.role as ChatRole,
       content: m.content,
+      attachments: Array.isArray(m.attachments)
+        ? (m.attachments as { path: string; mimeType?: string; mime_type?: string }[]).map(
+            (a) => ({
+              path: a.path,
+              mimeType: a.mimeType ?? a.mime_type ?? "image/jpeg",
+            }),
+          )
+        : [],
       createdAt: m.created_at,
     })),
   });

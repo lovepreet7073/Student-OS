@@ -4,6 +4,45 @@ Append-only log of architectural decisions. Newest at the top. Every entry: **da
 
 ---
 
+## ADR-0027 · 2026-07-21 · Vision chat forwards only the current turn's attachments to Gemini
+
+**Decision:** The Module 41 Vision-chat API route loads and forwards
+only the CURRENT message's attachments to Gemini as `inlineData`
+parts. Prior turns' attachments are stored in the `attachments` jsonb
+column and rendered in the UI, but not re-uploaded to the model.
+
+**Why:**
+1. **Token budget.** A single image is ~250–1500 image tokens. Re-sending
+   even three prior images every turn burns half the context window on
+   pixels that only mattered for the turn they were on. Chats where the
+   student needs an earlier image can trivially re-attach it.
+2. **Latency.** Every attachment costs a Supabase Storage `download()`
+   round-trip. Re-fetching all history-images turns a 200 ms first-byte
+   into a multi-second wait as the chat grows.
+3. **Correctness.** Gemini's Vision behaviour when given many prior
+   images alongside a text-only history is inconsistent — sometimes it
+   confuses which image the current question refers to. Restricting to
+   the current turn keeps the model's attention focused.
+
+**Trade-off accepted:** if a student wants to reference an image from
+turn 3 in turn 7, they have to re-attach it. In practice students who
+use the image feature use it for one-shot help ("what does this diagram
+mean?") — a multi-turn "same image" workflow is rare and the workaround
+is one tap.
+
+**Alternatives considered:**
+- **Re-send every prior image in every request**: token blowup, worse
+  latency, no consistent quality gain.
+- **Re-send only when the current text mentions the past image**:
+  requires a classifier we don't have; wrong for MVP.
+- **Persist a Gemini-side conversation ID and let the model keep the
+  images itself**: Gemini's Files API supports this, but adds an entire
+  new lifecycle to manage (upload → get file id → delete on delete)
+  that our current chat delete doesn't touch. Revisit if we ship
+  server-side conversation summarisation.
+
+---
+
 ## ADR-0026 · 2026-07-21 · Chat streams over an API route; one-shot mutations stay Server Actions
 
 **Decision:** The Module 37 AI chat feature uses a single API route
