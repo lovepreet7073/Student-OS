@@ -24,6 +24,10 @@ export async function reviewCard(
   }
 
   const supabase = await getSupabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return err({ code: "UNAUTHORIZED", message: "Please sign in." });
 
   const { data: card, error: fetchErr } = await supabase
     .from("flashcards")
@@ -35,6 +39,8 @@ export async function reviewCard(
 
   if (fetchErr) return err({ code: "DB", message: "Couldn't load the card." });
   if (!card) return err({ code: "NOT_FOUND", message: "Card not found." });
+
+  const easeBefore = card.ease_factor;
 
   const next = applySm2(
     {
@@ -61,6 +67,24 @@ export async function reviewCard(
     .eq("id", card.id);
 
   if (updateErr) return err({ code: "DB", message: "Couldn't save the review." });
+
+  // Audit row — telemetry only, best-effort. A failed insert must NOT tank
+  // the review; the student's SM-2 state has already been persisted above.
+  const { error: auditErr } = await supabase.from("flashcard_reviews").insert({
+    card_id: card.id,
+    deck_id: card.deck_id,
+    user_id: user.id,
+    quality: parsed.data.quality,
+    ease_before: easeBefore,
+    ease_after: next.easeFactor,
+    interval_after: next.intervalDays,
+  });
+  if (auditErr) {
+    console.error("[reviewCard] audit insert failed", {
+      code: auditErr.code,
+      message: auditErr.message,
+    });
+  }
 
   // Bump the deck's updated_at so it floats to the top of the list.
   await supabase

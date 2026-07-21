@@ -4,6 +4,45 @@ Append-only log of architectural decisions. Newest at the top. Every entry: **da
 
 ---
 
+## ADR-0025 · 2026-07-21 · Flashcard reviews get their own audit table; SM-2 state stays on the card
+
+**Decision:** `flashcard_reviews` (Module 34) is a separate append-only
+table with one row per review — `card_id`, `deck_id`, `user_id`, `quality`,
+`ease_before`, `ease_after`, `interval_after`, `reviewed_at`. The SM-2
+state fields (`ease_factor`, `interval_days`, `repetition`, `due_at`,
+`lapses`, `total_reviews`) stay on `flashcards`.
+
+**Why:**
+1. The scheduler only needs the *current* state of a card, not its
+   history. Keeping SM-2 fields on the card row means `reviewCard` reads
+   and writes the same row — no join needed for the hot path.
+2. Retention analytics needs the *history*. Rolling that into the card row
+   as a `review_history jsonb` column would grow the hot row unbounded and
+   force `reviewCard` to load and rewrite the whole array on every tap.
+3. The audit insert is best-effort — a failed audit does NOT roll back
+   the card update. That's only safe because the two writes are
+   decoupled; a single-row model with `review_history` would couple them.
+4. `flashcard_reviews` has RLS `insert-only` for authenticated users. No
+   update/delete policies — the log is immutable by design.
+
+**Trade-off accepted:** Retention queries count rows in the audit table
+rather than deriving from a denormalised `correct_reviews` counter on the
+card. At current scale (≤ 40 cards × ≤ 100 reviews/card = 4000 rows/deck
+worst-case) that's still ~5ms with the deck_id index. If it grows we'll
+add a `flashcard_deck_stats` view.
+
+**Alternatives considered:**
+- Store review history as jsonb on the card row: hot-row bloat + coupled
+  writes.
+- Compute retention from SM-2 state only (`total_reviews` + `lapses`):
+  ambiguous — a card that went "again → good → good" shows
+  `total=3, lapses=1` which isn't retention. Only the quality-per-review
+  log gives the right answer.
+- Materialised view refreshed hourly: adds an operational surface for
+  three cheap COUNT queries.
+
+---
+
 ## ADR-0024 · 2026-07-21 · Teacher analytics ships without a new table — attribution lives on `community_notes`
 
 **Decision:** `/app/teacher` (Module 30) reads every metric from existing

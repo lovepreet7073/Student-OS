@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Bookmark,
   BookText,
   ChevronRight,
   FileText,
+  Search,
   Users,
+  X,
 } from "lucide-react";
 
+import { Input } from "@/components/ui/input";
 import { EmptyState } from "@/components/shared/empty-state";
 import { formatRelativeTime } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
@@ -45,18 +48,32 @@ const KIND_META = {
 
 export function BookmarksView({ overview }: BookmarksViewProps) {
   const [tab, setTab] = useState<Tab>("all");
+  const [query, setQuery] = useState("");
 
-  const items: BookmarkItem[] =
-    tab === "all"
-      ? [...overview.notes, ...overview.files, ...overview.community].sort(
-          (a, b) =>
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-        )
-      : tab === "notes"
-        ? overview.notes
-        : tab === "files"
-          ? overview.files
-          : overview.community;
+  const baseItems: BookmarkItem[] = useMemo(
+    () =>
+      tab === "all"
+        ? [...overview.notes, ...overview.files, ...overview.community].sort(
+            (a, b) =>
+              new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
+          )
+        : tab === "notes"
+          ? overview.notes
+          : tab === "files"
+            ? overview.files
+            : overview.community,
+    [tab, overview],
+  );
+
+  const items = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length === 0) return baseItems;
+    return baseItems.filter(
+      (i) =>
+        i.title.toLowerCase().includes(q) ||
+        i.subtitle.toLowerCase().includes(q),
+    );
+  }, [baseItems, query]);
 
   const countFor = (key: Tab): number =>
     key === "all"
@@ -77,6 +94,32 @@ export function BookmarksView({ overview }: BookmarksViewProps) {
           Everything you saved to come back to.
         </p>
       </header>
+
+      <div className="relative mb-4">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden
+        />
+        <Input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search your bookmarks"
+          enterKeyHint="search"
+          className="pl-9 pr-9"
+          aria-label="Search bookmarks"
+        />
+        {query.length > 0 ? (
+          <button
+            type="button"
+            onClick={() => setQuery("")}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <X className="h-4 w-4" aria-hidden />
+          </button>
+        ) : null}
+      </div>
 
       <div
         role="tablist"
@@ -118,11 +161,19 @@ export function BookmarksView({ overview }: BookmarksViewProps) {
       </div>
 
       {items.length === 0 ? (
-        <EmptyState
-          icon={Bookmark}
-          title="Nothing bookmarked yet"
-          description="Tap the bookmark icon on any note, file, or community post to save it here."
-        />
+        query.trim().length > 0 ? (
+          <EmptyState
+            icon={Search}
+            title={`No matches for "${query.trim()}"`}
+            description="Try a shorter or different word."
+          />
+        ) : (
+          <EmptyState
+            icon={Bookmark}
+            title="Nothing bookmarked yet"
+            description="Tap the bookmark icon on any note, file, or community post to save it here."
+          />
+        )
       ) : (
         <ul className="flex flex-col gap-2.5">
           {items.map((item) => (

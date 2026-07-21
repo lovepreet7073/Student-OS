@@ -111,9 +111,23 @@ generator prefills its form; `generateDeck` sees `sourceNoteId`, loads
 the note body via RLS, and passes it to the prompt as `sourceText` — the
 AI must extract cards from that content, not general knowledge.
 
+## Reviews audit + retention (Module 34)
+
+`flashcard_reviews` is an append-only audit log. `reviewCard` writes one
+row per tap: `{ card_id, deck_id, user_id, quality, ease_before,
+ease_after, interval_after, reviewed_at }`. The insert is best-effort —
+a failed audit does NOT roll back the SM-2 update on the card row.
+
+Deck detail exposes **retention** — the fraction of reviews rated `good`
+or `easy` — via `getDeckStats(deckId)`. Three parallel COUNT queries
+against `flashcard_reviews`: total, correct, last-7-days. Retention is
+`null` (rendered as "—") when the deck has zero reviews so we don't
+falsely imply the student failed everything.
+
 ## Enhancement ideas
 
-1. **`flashcard_reviews` audit table** for retention analytics per card / per deck.
-2. **Voice-first review** — TTS the front, microphone the answer, transcribe + auto-mark against `back`.
-3. **Anki export** — dump a deck as a `.apkg` for students who already run Anki elsewhere.
-4. **Interleaved cross-subject inbox filter** — "just Math today" toggle on the inbox route.
+1. **Voice-first review** — TTS the front, microphone the answer, transcribe + auto-mark against `back`.
+2. **Anki export** — dump a deck as a `.apkg` for students who already run Anki elsewhere.
+3. **Interleaved cross-subject inbox filter** — "just Math today" toggle on the inbox route.
+4. **Per-card retention** — surface individual cards with retention < 50% as a "weak cards" list.
+5. **Streak & study calendar** — heatmap of `flashcard_reviews` per day.

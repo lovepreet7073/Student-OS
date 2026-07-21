@@ -60,11 +60,24 @@ for teacher accounts.
 - **Export / CSV download** — not shipped. Add when the first teacher asks.
 - **Nav item** — the 5-item mobile nav is locked. Discoverable through community.
 
+## 30-day activity chart (Module 35)
+
+`getTeacherDailyActivity(days = 30)` returns a dense array of 30 buckets
+(one per day, empty buckets included) with `{ day, approved, rejected }`.
+`<ActivityChart>` renders a stacked SVG bar chart — no library, no client
+JS. Green segment (approved) stacks on red (rejected). Empty-state
+renders when no bucket has activity so the chart never shows as a bare
+grid.
+
+Grouping runs in JS at the action layer because Supabase JS doesn't
+expose GROUP BY without an RPC. At 30 days × ≤ 100 actions/day this is a
+rounding error; if it grows we swap in a `teacher_daily_activity` view.
+
 ## Enhancement ideas
 
-1. **30-day sparklines** on approved / rejected cards — a small SVG per KPI.
-2. **Median time-to-moderation** — surface how fast a teacher clears the queue.
-3. **Report-source breakdown** — which authors get reported most, and for what.
-4. **Cohort comparison** — show this teacher's approval rate vs the average
+1. **Median time-to-moderation** — surface how fast a teacher clears the queue.
+2. **Report-source breakdown** — which authors get reported most, and for what.
+3. **Cohort comparison** — show this teacher's approval rate vs the average
    for the same board × class × medium.
-5. **Weekly digest email** — same data set, delivered Sundays via a cron job.
+4. **Weekly digest email** — same data set, delivered Sundays via a cron job.
+5. **Longer time range toggle** — 30d / 90d / all-time switcher on the chart.

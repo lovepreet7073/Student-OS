@@ -20,13 +20,15 @@ import {
 import { formatRelativeTime } from "@/lib/format-date";
 
 import { deleteDeck } from "../actions/delete-deck";
+import type { DeckStats } from "../actions/get-deck-stats";
 import type { FlashcardDeckWithCards } from "../types";
 
 interface DeckDetailViewProps {
   deck: FlashcardDeckWithCards;
+  stats: DeckStats | null;
 }
 
-export function DeckDetailView({ deck }: DeckDetailViewProps) {
+export function DeckDetailView({ deck, stats }: DeckDetailViewProps) {
   const router = useRouter();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -85,12 +87,30 @@ export function DeckDetailView({ deck }: DeckDetailViewProps) {
 
       <section
         aria-label="Deck stats"
-        className="mb-6 grid grid-cols-3 gap-2.5"
+        className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4"
       >
         <StatCard label="Due" value={dueCount} tone="warning" />
         <StatCard label="New" value={newCount} tone="primary" />
         <StatCard label="Mastered" value={masteredCount} tone="success" />
+        <StatCard
+          label="Retention"
+          value={
+            stats === null || stats.retentionPercent === null
+              ? "—"
+              : `${stats.retentionPercent}%`
+          }
+          tone="success"
+        />
       </section>
+
+      {stats && stats.totalReviews > 0 ? (
+        <p className="mb-5 text-center text-[12px] text-muted-foreground">
+          {stats.correctReviews}/{stats.totalReviews} reviews recalled
+          {stats.reviewsLast7Days > 0
+            ? ` · ${stats.reviewsLast7Days} this week`
+            : ""}
+        </p>
+      ) : null}
 
       {readyToStudy > 0 ? (
         <Button asChild size="lg" fullWidth>
@@ -170,7 +190,7 @@ function StatCard({
   tone,
 }: {
   label: string;
-  value: number;
+  value: number | string;
   tone: "primary" | "warning" | "success";
 }) {
   const toneClass =
@@ -179,10 +199,11 @@ function StatCard({
       : tone === "success"
         ? "bg-success/10 text-success"
         : "bg-accent text-primary";
+  const isWide = typeof value === "string" && value.length >= 3;
   return (
     <div className="flex flex-col items-center gap-1 rounded-lg border border-border bg-card p-3">
       <span
-        className={`flex h-9 w-9 items-center justify-center rounded-full text-[15px] font-extrabold ${toneClass}`}
+        className={`flex h-9 items-center justify-center rounded-full text-[15px] font-extrabold ${toneClass} ${isWide ? "px-3" : "w-9"}`}
       >
         {value}
       </span>

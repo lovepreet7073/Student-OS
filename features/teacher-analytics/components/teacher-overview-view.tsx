@@ -11,10 +11,13 @@ import {
 import { formatRelativeTime } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 
+import type { DailyBucket } from "../actions/get-daily-activity";
 import type { TeacherAnalyticsOverview } from "../types";
+import { ActivityChart } from "./activity-chart";
 
 interface Props {
   overview: TeacherAnalyticsOverview;
+  daily: DailyBucket[] | null;
   boardShort: string;
   className: string;
   mediumName: string;
@@ -31,6 +34,7 @@ interface Props {
  */
 export function TeacherOverviewView({
   overview,
+  daily,
   boardShort,
   className,
   mediumName,
@@ -108,6 +112,13 @@ export function TeacherOverviewView({
           tone="info"
         />
       </section>
+
+      {daily ? (
+        <section aria-label="Daily activity" className="mb-8">
+          <SectionHeader title="Last 30 days" />
+          <ActivityChart buckets={daily} />
+        </section>
+      ) : null}
 
       <div className="grid gap-8 lg:grid-cols-2">
         <section aria-label="Top contributors">

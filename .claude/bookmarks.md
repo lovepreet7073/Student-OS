@@ -53,9 +53,16 @@ study_files + community_bookmarks — and the Workspace bookmarks tile reads
 that field. The old per-source `bookmarkedNotes` was removed since no other
 surface depended on it.
 
+## Client-side search (Module 36)
+
+`/app/bookmarks` gained a search input. Filters the currently-loaded set
+in memory (title + subtitle case-insensitive match) — no server round-trip,
+no per-source pagination changes. Fine for our list cap (30 items per
+source, 90 max total). Custom "no matches" empty state distinguishes an
+empty search from an empty library.
+
 ## Enhancement ideas
 
-1. **Search inside bookmarks** — reuse the `/app/search` ILIKE pattern scoped
-   to bookmarked rows.
+1. **Server-side search across full bookmark set** — when a user crosses the 90-item cap.
 2. **Bulk unbookmark** — checkbox mode for clearing stale saves.
 3. **Sort options** — currently newest first; add "By title / By subject".
