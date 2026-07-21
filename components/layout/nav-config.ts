@@ -84,7 +84,7 @@ export interface ShortcutItem {
  * *sometimes* action, not an every-day one.
  */
 export const APP_SHORTCUTS: readonly ShortcutItem[] = [
-  { key: "library",    href: "/app/library",    label: "My Study Space", icon: FileText },
+  { key: "library",    href: "/app/notes?view=files", label: "Files",     icon: FileText },
   { key: "tasks",      href: "/app/tasks",      label: "Tasks",          icon: ClipboardList },
   { key: "flashcards", href: "/app/flashcards", label: "Flashcards",     icon: Layers },
   { key: "study",      href: "/app/study",      label: "Quizzes",        icon: BookOpen },

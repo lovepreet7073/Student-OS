@@ -72,9 +72,9 @@ export function CategoryGrid({ overview }: Props) {
     },
     {
       key: "library",
-      title: "My Study Space",
-      description: "Upload PDFs and photos. AI can read them.",
-      href: "/app/library",
+      title: "Files",
+      description: "PDFs and photos in your Library. AI can read them.",
+      href: "/app/notes?view=files",
       icon: FileText,
       tone: "brand",
       count: overview.files,
