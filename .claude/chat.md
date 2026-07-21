@@ -124,32 +124,81 @@ containing up to 3500 chars of note content plus an instruction to
 `/app/chat/{id}?auto=1` — the same `?auto=1` handshake as
 `<NewChatForm>` so the assistant auto-answers.
 
+## Edit + regenerate (Module 43)
+
+`POST /api/chat` gained a `mode` field: `send` (default) or
+`regenerate`. In regenerate mode the API route DOESN'T insert a new
+user row — it pulls the trailing user turn from history and uses that
+as the current turn instead. This powers two flows:
+
+- **Edit**: `<MessageBubble>` pencil on any persisted user turn opens
+  an inline textarea. On save, `editMessage({ messageId, content })`
+  overwrites the row AND deletes every message with `created_at >`
+  the edited row's timestamp (assistant reasoning based on the old
+  text is now invalid). The client then hits `/api/chat` with
+  `mode: 'regenerate'` for a fresh reply.
+- **Regenerate**: a small refresh chip on the last assistant reply
+  calls `prepareRegenerate({ conversationId })` — deletes just the
+  trailing assistant row and returns the user question — then streams
+  a fresh reply via `mode: 'regenerate'`.
+
+Bonus fix: the `?auto=1` handshake now also uses `mode: 'regenerate'`,
+which fixes an old bug where `<NewChatForm>` and `startChatFromNote`
+seeded a user message AND then the API route inserted a duplicate copy.
+
+## PDF attachments (Module 44)
+
+Bucket allowlist now includes `application/pdf`; size limit bumped
+10 MB → 25 MB because scanned pages routinely exceed 10. Client picker
+`accept` widened to `image/png,image/jpeg,image/webp,application/pdf`;
+the preview card falls back to a filecard when the picked type is a
+PDF. `<AttachmentThumb>` renders persisted PDFs as a clickable
+filecard, images stay as `<Image>`. The Gemini forward path is
+unchanged — 1.5-flash accepts PDF `inlineData` natively.
+
+## Voice input (Module 45)
+
+`useVoiceInput()` wraps the Web Speech API. On supported browsers
+(Chrome/Edge/Safari) the input toolbar gains a mic button. Tapping
+starts a `continuous`, `interimResults` recognition session; the
+interim transcript renders live above the input, and completed phrases
+append to the textarea using a `voiceBaselineRef` snapshot of pre-mic
+content so existing typed text isn't wiped. Sending or hitting the
+mic again stops recognition. Firefox and older WebKit builds return
+`supported: false` — the button never renders instead of showing a
+dead affordance.
+
+## Chat → note (Module 46)
+
+`<SaveChatAsNoteButton>` in the chat header flattens every turn into
+one note via `saveConversationAsNote({ conversationId, subjectId })`.
+Format: `**You:**` / `**AI:**` blocks separated by `---`. Attachments
+aren't copied — they stay in the chat — but each turn that had one
+gets a `_[N attachments — see original chat]_` marker so the reader
+knows why the note might look incomplete. Success screen offers a
+direct link to the new note.
+
 ## What this module does NOT do
 
-- **Message editing / regeneration** — no "regenerate this reply" button.
-- **Rate limiting** — deferred until we see abuse. Slot into the
-  API route header logic when needed.
+- **Rate limiting** — deferred until we see abuse.
 - **Conversation naming** — one-shot auto-title from the first message.
   No rename UI in v1.
-- **Voice input** — deferred.
 - **Web search grounding** — Gemini's `googleSearchRetrieval` tool is
   out of scope; the assistant answers from its own training only.
-- **Multi-image attachments** — one image per message in v1. Schema
-  allows an array but the client picker is single-file.
-- **Re-sending prior attachments in history** — turn-local only, per
-  the token-budget note above.
+- **Multi-image attachments** — one attachment per message in v1.
+- **Re-sending prior attachments in history** — turn-local only (ADR-0027).
+- **Editing an already-attached image** — edit only rewrites text.
+- **Voice on Firefox** — Web Speech API not implemented there; button
+  is hidden.
 
 ## Enhancement ideas
 
-1. **Message editing** — edit a user message → truncate messages after
-   it → regenerate.
-2. **Voice input** — Web Speech API → `POST /api/chat` unchanged.
-3. **PDF attachments** — same `inlineData` path; add `application/pdf`
-   to the bucket allowlist and the schema.
-4. **Multi-image messages** — expand the client picker to accept up to
+1. **Multi-image messages** — expand the client picker to accept up to
    4 images; the API route already loops.
-5. **Conversation folders** — group chats by topic when the list gets
+2. **Conversation folders** — group chats by topic when the list gets
    long.
-6. **Continue-chat-in-note** — reverse of Module 42: when a chat
-   surfaces a keeper explanation, one-click convert the whole
-   conversation into a note.
+3. **Chat rename** — a small pencil on the header title.
+4. **Undo edit** — cache the previous message body for 30 s so a
+   mis-edit can be reverted without losing the follow-up.
+5. **Speech language switcher** — surface `lang` picker for non-English
+   dictation (the hook already accepts it as a parameter).

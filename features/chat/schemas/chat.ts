@@ -12,7 +12,12 @@ export type CreateConversationInput = z.infer<typeof createConversationSchema>;
 
 export const chatAttachmentSchema = z.object({
   path: z.string().min(1),
-  mimeType: z.enum(["image/png", "image/jpeg", "image/webp"]),
+  mimeType: z.enum([
+    "image/png",
+    "image/jpeg",
+    "image/webp",
+    "application/pdf",
+  ]),
 });
 export type ChatAttachmentRef = z.infer<typeof chatAttachmentSchema>;
 
@@ -23,11 +28,20 @@ export const sendMessageSchema = z.object({
     .trim()
     .max(4000, "Trim your message — keep it under 4000 characters"),
   attachments: z.array(chatAttachmentSchema).max(1).optional(),
+  /**
+   * `send` (default): insert a new user message row, then stream a reply.
+   * `regenerate`: assume the trailing user message is already in the DB
+   *   (e.g. after `editMessage` or `prepareRegenerate`); DON'T re-insert
+   *   it — just stream a fresh assistant reply.
+   */
+  mode: z.enum(["send", "regenerate"]).default("send"),
 })
-  // Message text is optional when an image is attached — a picture on its
-  // own is a valid ask ("what does this diagram mean?") — but at least one
-  // of the two must be present.
+  // Message text is optional when an image or PDF is attached — a
+  // picture on its own is a valid ask ("what does this diagram mean?").
+  // `regenerate` mode has no incoming user text at all (the persisted
+  // last-user-message is what gets answered).
   .superRefine((val, ctx) => {
+    if (val.mode === "regenerate") return;
     if (
       val.message.trim().length === 0 &&
       (!val.attachments || val.attachments.length === 0)

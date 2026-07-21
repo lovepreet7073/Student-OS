@@ -4,6 +4,50 @@ Append-only log of architectural decisions. Newest at the top. Every entry: **da
 
 ---
 
+## ADR-0028 · 2026-07-21 · Chat edit/regenerate reuses `/api/chat` via a `mode` flag
+
+**Decision:** The Module 43 edit and regenerate flows do not introduce
+new endpoints. They mutate DB state via Server Actions (`editMessage`,
+`prepareRegenerate`), then trigger a fresh assistant reply by hitting
+`/api/chat` with `mode: 'regenerate'`. In that mode the API route
+DOESN'T insert a new user row — it derives the current turn from the
+trailing user message already in history.
+
+**Why:**
+1. The streaming machinery — auth, RLS-scoped history load, Gemini
+   history assembly, attachment base64-download, chunk-forwarding,
+   fullText persist — is 100+ lines of glue we don't want to duplicate.
+2. The client's stream reader is stable across both flows. Passing an
+   extra flag in the POST body costs nothing.
+3. `mode: 'regenerate'` makes the "who inserts the user message?"
+   contract explicit. `send`: the API route inserts. `regenerate`:
+   the caller (edit action, prepare-regenerate action, or the `?auto=1`
+   handshake after a chat-seeding action) inserted it already. Trying
+   to auto-detect this leads to fragile heuristics; an explicit flag
+   doesn't.
+4. Bonus fix: the `?auto=1` handshake had a latent duplicate-insert
+   bug (create-conversation inserts the message; ChatView auto-triggers
+   the API route which used to insert it again). Migrating auto-start
+   to `mode: 'regenerate'` fixes it without a follow-up commit.
+
+**Trade-off accepted:** the API route now has two branches (insert vs.
+skip) that couple its behaviour to caller expectations. But the branch
+is a single `if (isRegenerate)` with a clear invariant ("the tail must
+already be a user turn"), and both edit and regenerate callers exercise
+it, so it stays honest.
+
+**Alternatives considered:**
+- **Second endpoint `POST /api/chat/regenerate`**: duplicates 100+ lines
+  of streaming/auth/history glue for zero DX gain on the client.
+- **Auto-detect based on history tail**: fragile — every seed-and-auto
+  flow (new chat, ask-AI-about-this-note) would rely on the detection
+  being right, and any future flow that legitimately wants "insert
+  even though the tail is a user turn" would have no escape hatch.
+- **Regenerate as a Server Action returning a String**: breaks the
+  streaming UX we shipped in Module 37 for no gain.
+
+---
+
 ## ADR-0027 · 2026-07-21 · Vision chat forwards only the current turn's attachments to Gemini
 
 **Decision:** The Module 41 Vision-chat API route loads and forwards

@@ -5,7 +5,12 @@ import { randomUUID } from "crypto";
 import { getSupabaseServer } from "@/lib/supabase/server";
 import { err, ok, type ActionError, type Result } from "@/lib/result";
 
-const ALLOWED = new Set(["image/png", "image/jpeg", "image/webp"]);
+const ALLOWED = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "application/pdf",
+]);
 
 interface BeginArgs {
   conversationId: string;
@@ -34,7 +39,7 @@ export async function beginAttachmentUpload(
   if (!ALLOWED.has(args.mimeType)) {
     return err({
       code: "VALIDATION",
-      message: "Only PNG, JPEG, or WEBP images are supported.",
+      message: "Only PNG, JPEG, WEBP images or PDFs are supported.",
     });
   }
 
@@ -49,7 +54,9 @@ export async function beginAttachmentUpload(
       ? "png"
       : args.mimeType === "image/webp"
         ? "webp"
-        : "jpg";
+        : args.mimeType === "application/pdf"
+          ? "pdf"
+          : "jpg";
   const path = `${user.id}/${args.conversationId}/${randomUUID()}.${ext}`;
 
   const { data, error } = await supabase.storage

@@ -66,7 +66,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const { data: priorMsgs, error: msgErr } = await supabase
     .from("chat_messages")
-    .select("role, content")
+    .select("role, content, attachments")
     .eq("conversation_id", conv.id)
     .order("created_at", { ascending: true });
 
@@ -77,31 +77,75 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  const attachmentsForDb = (parsed.data.attachments ?? []).map((a) => ({
-    path: a.path,
-    mime_type: a.mimeType,
-  }));
+  const isRegenerate = parsed.data.mode === "regenerate";
 
-  const { error: insertUserErr } = await supabase.from("chat_messages").insert({
-    conversation_id: conv.id,
-    user_id: user.id,
-    role: "user",
-    content: parsed.data.message,
-    attachments: attachmentsForDb,
-  });
-  if (insertUserErr) {
-    return NextResponse.json(
-      { error: "Couldn't save your message" },
-      { status: 500 },
-    );
+  // ---- Determine which message we're answering ----
+  //
+  // `send` mode: insert the incoming user message, then answer it.
+  //   - History we hand to Gemini is the prior messages (without the new one).
+  //   - `currentText` is `parsed.data.message`.
+  //   - `currentAttachments` are `parsed.data.attachments`.
+  //
+  // `regenerate` mode: the trailing message in the DB is already the
+  //   user question we want re-answered (edit-message or
+  //   prepare-regenerate placed it there). We DON'T re-insert; we DON'T
+  //   include it in history — we pull its content and attachments out
+  //   and hand them to `sendMessageStream` as the current turn instead.
+  let historyForGemini: typeof priorMsgs = priorMsgs ?? [];
+  let currentText = parsed.data.message;
+  let currentAttachments = parsed.data.attachments ?? [];
+
+  if (isRegenerate) {
+    const tail = (priorMsgs ?? []).at(-1);
+    if (!tail || tail.role !== "user") {
+      return NextResponse.json(
+        { error: "Nothing to regenerate" },
+        { status: 400 },
+      );
+    }
+    historyForGemini = (priorMsgs ?? []).slice(0, -1);
+    currentText = tail.content;
+    const tailAttachments = Array.isArray(tail.attachments)
+      ? (tail.attachments as { path?: string; mime_type?: string; mimeType?: string }[])
+      : [];
+    currentAttachments = tailAttachments.flatMap((a) => {
+      const mime = (a.mime_type ?? a.mimeType) as
+        | "image/png"
+        | "image/jpeg"
+        | "image/webp"
+        | "application/pdf"
+        | undefined;
+      if (!a.path || !mime) return [];
+      return [{ path: a.path, mimeType: mime }];
+    });
+  } else {
+    const attachmentsForDb = currentAttachments.map((a) => ({
+      path: a.path,
+      mime_type: a.mimeType,
+    }));
+
+    const { error: insertUserErr } = await supabase
+      .from("chat_messages")
+      .insert({
+        conversation_id: conv.id,
+        user_id: user.id,
+        role: "user",
+        content: currentText,
+        attachments: attachmentsForDb,
+      });
+    if (insertUserErr) {
+      return NextResponse.json(
+        { error: "Couldn't save your message" },
+        { status: 500 },
+      );
+    }
   }
 
   // Load current-turn attachments as base64 for Gemini Vision. Only the
   // NEW message's attachments are forwarded — re-sending prior images
-  // every turn would blow up the token budget. If a student needs to
-  // reference an earlier image, they can re-attach it.
+  // every turn would blow up the token budget (ADR-0027).
   const inlineImages: Array<{ mimeType: string; data: string }> = [];
-  for (const a of parsed.data.attachments ?? []) {
+  for (const a of currentAttachments) {
     const { data: blob, error: dlErr } = await supabase.storage
       .from("chat-attachments")
       .download(a.path);
@@ -122,7 +166,7 @@ export async function POST(request: Request): Promise<Response> {
   const history: Array<{ role: "user" | "model"; parts: Array<{ text: string }> }> = [
     { role: "user", parts: [{ text: systemPrompt }] },
     { role: "model", parts: [{ text: "Understood. I'm ready to help." }] },
-    ...(priorMsgs ?? []).map((m) => ({
+    ...historyForGemini.map((m) => ({
       role: m.role === "assistant" ? ("model" as const) : ("user" as const),
       parts: [{ text: m.content }],
     })),
@@ -138,6 +182,11 @@ export async function POST(request: Request): Promise<Response> {
   // string OR an array of `Part`s. When there's an image, we must send
   // an array with `inlineData` first (Vision guideline) followed by the
   // text prompt.
+  const fallbackPrompt =
+    inlineImages.some((img) => img.mimeType === "application/pdf")
+      ? "Please read this document and help me understand it."
+      : "Please look at this image and help me understand it.";
+
   const messageParts =
     inlineImages.length > 0
       ? [
@@ -146,12 +195,12 @@ export async function POST(request: Request): Promise<Response> {
           })),
           {
             text:
-              parsed.data.message.trim().length > 0
-                ? parsed.data.message
-                : "Please look at this image and help me understand it.",
+              currentText.trim().length > 0
+                ? currentText
+                : fallbackPrompt,
           },
         ]
-      : parsed.data.message;
+      : currentText;
 
   const stream = new ReadableStream({
     async start(controller) {

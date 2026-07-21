@@ -3,7 +3,20 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, ImagePlus, Send, Sparkles, Trash2, User2, X } from "lucide-react";
+import {
+  ArrowLeft,
+  FileText,
+  ImagePlus,
+  Mic,
+  MicOff,
+  Pencil,
+  RefreshCw,
+  Send,
+  Sparkles,
+  Trash2,
+  User2,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -24,8 +37,12 @@ import type { Subject } from "@/features/academic-identity/types";
 
 import { beginAttachmentUpload } from "../actions/begin-attachment-upload";
 import { deleteConversation } from "../actions/delete-conversation";
+import { editMessage } from "../actions/edit-message";
+import { prepareRegenerate } from "../actions/prepare-regenerate";
+import { useVoiceInput } from "../hooks/use-voice-input";
 import { AttachmentThumb } from "./attachment-thumb";
 import { SaveAsNoteButton } from "./save-as-note-button";
+import { SaveChatAsNoteButton } from "./save-chat-as-note-button";
 import type { ChatAttachment, ChatConversationWithMessages, ChatMessage } from "../types";
 
 interface Props {
@@ -70,6 +87,24 @@ export function ChatView({ conversation, subjects }: Props) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const voice = useVoiceInput();
+  const voiceBaselineRef = useRef("");
+
+  // While listening, append the recognised final transcript to the current
+  // input value. `voiceBaselineRef` remembers what was in the textarea BEFORE
+  // the mic started so we don't wipe user-typed text.
+  useEffect(() => {
+    if (!voice.listening) return;
+    const combined = [voiceBaselineRef.current, voice.finalTranscript]
+      .filter((s) => s.trim().length > 0)
+      .join(" ");
+    setInputValue(combined);
+  }, [voice.listening, voice.finalTranscript]);
+
+  useEffect(() => {
+    if (voice.error) toast.error(voice.error);
+  }, [voice.error]);
+
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoTriggeredRef = useRef(false);
@@ -91,7 +126,10 @@ export function ChatView({ conversation, subjects }: Props) {
   }, [messages, pending, scrollToBottom]);
 
   const streamAssistant = useCallback(
-    async (message: string, attachments?: ChatAttachment[]) => {
+    async (
+      message: string,
+      opts: { attachments?: ChatAttachment[]; mode?: "send" | "regenerate" } = {},
+    ) => {
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -105,7 +143,8 @@ export function ChatView({ conversation, subjects }: Props) {
           body: JSON.stringify({
             conversationId: conversation.id,
             message,
-            attachments,
+            attachments: opts.attachments,
+            mode: opts.mode ?? "send",
           }),
           signal: controller.signal,
         });
@@ -148,14 +187,14 @@ export function ChatView({ conversation, subjects }: Props) {
     if (messages.length !== 1 || messages[0]?.role !== "user") return;
     autoTriggeredRef.current = true;
     const first = messages[0];
-    void streamAssistant(first.content);
+    void streamAssistant(first.content, { mode: "regenerate" });
   }, [shouldAutoStart, messages, streamAssistant]);
 
   function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("Image is larger than 10 MB.");
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error("File is larger than 25 MB.");
       return;
     }
     if (attachment) URL.revokeObjectURL(attachment.previewUrl);
@@ -201,6 +240,7 @@ export function ChatView({ conversation, subjects }: Props) {
 
   async function onSend() {
     if (status === "streaming" || uploading) return;
+    if (voice.listening) voice.stop();
     const trimmed = inputValue.trim();
     const hasAttachment = attachment !== null;
     if (trimmed.length === 0 && !hasAttachment) return;
@@ -226,7 +266,48 @@ export function ChatView({ conversation, subjects }: Props) {
         createdAt: new Date().toISOString(),
       },
     ]);
-    await streamAssistant(trimmed, uploadedAttachments);
+    await streamAssistant(trimmed, { attachments: uploadedAttachments });
+  }
+
+  async function onRegenerate() {
+    if (status === "streaming") return;
+    // Drop the trailing assistant reply (both from DB via
+    // prepareRegenerate and from local state) so the pending bubble
+    // replaces it cleanly.
+    const res = await prepareRegenerate({ conversationId: conversation.id });
+    if (!res.ok) {
+      toast.error(res.error.message);
+      return;
+    }
+    setMessages((prev) => {
+      const last = prev.at(-1);
+      if (last && last.role === "assistant") return prev.slice(0, -1);
+      return prev;
+    });
+    await streamAssistant(res.data.userContent, { mode: "regenerate" });
+  }
+
+  async function onSaveEdit(messageId: string, newContent: string) {
+    const trimmed = newContent.trim();
+    if (trimmed.length === 0) {
+      toast.error("Edit can't be empty.");
+      return false;
+    }
+    const res = await editMessage({ messageId, content: trimmed });
+    if (!res.ok) {
+      toast.error(res.error.message);
+      return false;
+    }
+    // Truncate local state to match the DB truncate + swap in the new text.
+    setMessages((prev) => {
+      const idx = prev.findIndex((m) => m.id === messageId);
+      if (idx < 0) return prev;
+      const before = prev.slice(0, idx);
+      const edited = { ...prev[idx]!, content: trimmed };
+      return [...before, edited];
+    });
+    await streamAssistant(trimmed, { mode: "regenerate" });
+    return true;
   }
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -269,14 +350,23 @@ export function ChatView({ conversation, subjects }: Props) {
             ) : null}
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label="Delete chat"
-          onClick={() => setConfirmDelete(true)}
-        >
-          <Trash2 className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
-        </Button>
+        <div className="flex items-center gap-1">
+          {subjects.length > 0 && messages.length > 0 ? (
+            <SaveChatAsNoteButton
+              conversationId={conversation.id}
+              subjects={subjects}
+              defaultSubjectId={conversation.subjectId}
+            />
+          ) : null}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Delete chat"
+            onClick={() => setConfirmDelete(true)}
+          >
+            <Trash2 className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
+          </Button>
+        </div>
       </header>
 
       <div
@@ -288,17 +378,30 @@ export function ChatView({ conversation, subjects }: Props) {
             Say hello to start the conversation.
           </p>
         ) : null}
-        {messages.map((m) => (
-          <MessageBubble
-            key={m.id}
-            role={m.role}
-            content={m.content}
-            attachments={m.attachments}
-            messageId={m.id.startsWith("local-") ? undefined : m.id}
-            subjects={subjects}
-            defaultSubjectId={conversation.subjectId}
-          />
-        ))}
+        {messages.map((m, idx) => {
+          const isLastAssistant =
+            m.role === "assistant" &&
+            idx === messages.length - 1 &&
+            status === "idle";
+          return (
+            <MessageBubble
+              key={m.id}
+              role={m.role}
+              content={m.content}
+              attachments={m.attachments}
+              messageId={m.id.startsWith("local-") ? undefined : m.id}
+              subjects={subjects}
+              defaultSubjectId={conversation.subjectId}
+              onEdit={
+                m.role === "user" && !m.id.startsWith("local-")
+                  ? (next) => onSaveEdit(m.id, next)
+                  : undefined
+              }
+              onRegenerate={isLastAssistant ? onRegenerate : undefined}
+              disableActions={status === "streaming" || uploading}
+            />
+          );
+        })}
         {status === "streaming" ? (
           <MessageBubble
             role="assistant"
@@ -309,15 +412,38 @@ export function ChatView({ conversation, subjects }: Props) {
       </div>
 
       <div className="mt-3 pb-[env(safe-area-inset-bottom)]">
+        {voice.listening ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mb-2 flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-[12.5px] text-primary"
+          >
+            <Mic className="h-3.5 w-3.5 animate-pulse" aria-hidden />
+            <span className="flex-1 truncate">
+              {voice.interimTranscript.length > 0
+                ? voice.interimTranscript
+                : "Listening… speak now."}
+            </span>
+          </div>
+        ) : null}
         {attachment ? (
           <div className="mb-2 flex items-start gap-2 rounded-lg border border-border bg-card p-2">
-            {/* Local preview only — never persisted to the DOM after send. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={attachment.previewUrl}
-              alt="Attachment preview"
-              className="h-16 w-16 rounded-md object-cover"
-            />
+            {attachment.file.type.startsWith("image/") ? (
+              // Local preview only — never persisted to the DOM after send.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={attachment.previewUrl}
+                alt="Attachment preview"
+                className="h-16 w-16 rounded-md object-cover"
+              />
+            ) : (
+              <span
+                aria-hidden
+                className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-brand-accent/15 text-brand-accent"
+              >
+                <FileText className="h-6 w-6" strokeWidth={1.8} />
+              </span>
+            )}
             <div className="flex flex-1 flex-col gap-0.5 text-[12px]">
               <span className="truncate font-bold">{attachment.file.name}</span>
               <span className="text-muted-foreground">
@@ -338,7 +464,7 @@ export function ChatView({ conversation, subjects }: Props) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/png,image/jpeg,image/webp,application/pdf"
             className="sr-only"
             onChange={onPickImage}
           />
@@ -346,7 +472,7 @@ export function ChatView({ conversation, subjects }: Props) {
             type="button"
             variant="outline"
             size="icon"
-            aria-label="Attach image"
+            aria-label="Attach image or PDF"
             onClick={() => fileInputRef.current?.click()}
             disabled={
               status === "streaming" || uploading || attachment !== null
@@ -354,6 +480,32 @@ export function ChatView({ conversation, subjects }: Props) {
           >
             <ImagePlus className="h-4 w-4" aria-hidden />
           </Button>
+          {voice.supported ? (
+            <Button
+              type="button"
+              variant={voice.listening ? "primary" : "outline"}
+              size="icon"
+              aria-label={voice.listening ? "Stop dictating" : "Dictate a message"}
+              aria-pressed={voice.listening}
+              onClick={() => {
+                if (voice.listening) {
+                  voice.stop();
+                } else {
+                  voiceBaselineRef.current = inputValue;
+                  voice.reset();
+                  voice.start();
+                }
+              }}
+              disabled={status === "streaming" || uploading}
+              className={voice.listening ? "animate-pulse" : undefined}
+            >
+              {voice.listening ? (
+                <MicOff className="h-4 w-4" aria-hidden />
+              ) : (
+                <Mic className="h-4 w-4" aria-hidden />
+              )}
+            </Button>
+          ) : null}
           <Textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -416,6 +568,9 @@ function MessageBubble({
   messageId,
   subjects,
   defaultSubjectId,
+  onEdit,
+  onRegenerate,
+  disableActions,
 }: {
   role: "user" | "assistant";
   content: string;
@@ -424,8 +579,21 @@ function MessageBubble({
   messageId?: string;
   subjects?: Subject[];
   defaultSubjectId?: string | null;
+  /** Called with the new text. Returns true if the edit succeeded. */
+  onEdit?: (nextContent: string) => Promise<boolean>;
+  /** Rendered as a "Regenerate" button on the last assistant reply. */
+  onRegenerate?: () => Promise<void> | void;
+  disableActions?: boolean;
 }) {
   const isUser = role === "user";
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(content);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  useEffect(() => {
+    if (!editing) setDraft(content);
+  }, [content, editing]);
+
   const canSave =
     !isUser &&
     !pending &&
@@ -433,8 +601,19 @@ function MessageBubble({
     subjects &&
     subjects.length > 0 &&
     content.trim().length > 0;
+  const canEdit = !!onEdit && !pending && !editing;
+  const canRegenerate = !!onRegenerate && !pending && !disableActions;
   const hasContent = content.trim().length > 0;
   const hasAttachments = attachments && attachments.length > 0;
+
+  async function submitEdit() {
+    if (!onEdit) return;
+    setSavingEdit(true);
+    const ok = await onEdit(draft);
+    setSavingEdit(false);
+    if (ok) setEditing(false);
+  }
+
   return (
     <div className={cn("flex gap-2", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? (
@@ -453,7 +632,39 @@ function MessageBubble({
             ))}
           </div>
         ) : null}
-        {hasContent || pending ? (
+        {editing ? (
+          <div className="flex flex-col gap-2">
+            <Textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              rows={3}
+              className="min-h-[72px] resize-none text-[14px]"
+              disabled={savingEdit}
+              autoFocus
+            />
+            <div className="flex justify-end gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setEditing(false);
+                  setDraft(content);
+                }}
+                disabled={savingEdit}
+                className="rounded-md px-2 py-1 text-[12px] font-bold text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitEdit}
+                disabled={savingEdit || draft.trim().length === 0}
+                className="rounded-md bg-primary px-2 py-1 text-[12px] font-bold text-primary-foreground disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {savingEdit ? "Saving…" : "Save & regenerate"}
+              </button>
+            </div>
+          </div>
+        ) : hasContent || pending ? (
           <div
             className={cn(
               "rounded-2xl px-3.5 py-2.5 text-[14px] leading-relaxed",
@@ -466,13 +677,41 @@ function MessageBubble({
             <p className="whitespace-pre-wrap break-words">{content}</p>
           </div>
         ) : null}
-        {canSave ? (
-          <div className="flex justify-start">
-            <SaveAsNoteButton
-              messageId={messageId}
-              subjects={subjects}
-              defaultSubjectId={defaultSubjectId ?? null}
-            />
+        {!editing ? (
+          <div
+            className={cn(
+              "flex flex-wrap items-center gap-2",
+              isUser ? "justify-end" : "justify-start",
+            )}
+          >
+            {canEdit ? (
+              <button
+                type="button"
+                onClick={() => setEditing(true)}
+                disabled={disableActions}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-bold text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+              >
+                <Pencil className="h-3 w-3" aria-hidden />
+                Edit
+              </button>
+            ) : null}
+            {canRegenerate ? (
+              <button
+                type="button"
+                onClick={() => void onRegenerate!()}
+                className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] font-bold text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <RefreshCw className="h-3 w-3" aria-hidden />
+                Regenerate
+              </button>
+            ) : null}
+            {canSave ? (
+              <SaveAsNoteButton
+                messageId={messageId!}
+                subjects={subjects!}
+                defaultSubjectId={defaultSubjectId ?? null}
+              />
+            ) : null}
           </div>
         ) : null}
       </div>
