@@ -1,9 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  BookOpen,
   BookText,
   CalendarClock,
-  ClipboardCheck,
   ClipboardList,
   FileText,
   GraduationCap,
@@ -84,15 +82,13 @@ export interface ShortcutItem {
  * *sometimes* action, not an every-day one.
  */
 export const APP_SHORTCUTS: readonly ShortcutItem[] = [
-  { key: "library",    href: "/app/notes?view=files", label: "Files",     icon: FileText },
-  { key: "tasks",      href: "/app/tasks",      label: "Tasks",          icon: ClipboardList },
-  { key: "flashcards", href: "/app/flashcards", label: "Flashcards",     icon: Layers },
-  { key: "study",      href: "/app/study",      label: "Quizzes",        icon: BookOpen },
-  { key: "tests",      href: "/app/tests",      label: "Test Evals",     icon: ClipboardCheck },
-  { key: "chat",       href: "/app/chat",       label: "AI Chat",        icon: MessageSquare },
-  { key: "syllabus",   href: "/app/syllabus",   label: "Syllabus",       icon: GraduationCap },
-  { key: "calendar",   href: "/app/calendar",   label: "Calendar",       icon: CalendarClock },
-  { key: "help",       href: "/app/help",       label: "Helper",         icon: HelpCircle },
+  { key: "library",  href: "/app/notes?view=files", label: "Files",    icon: FileText },
+  { key: "tasks",    href: "/app/tasks",            label: "Tasks",    icon: ClipboardList },
+  { key: "practice", href: "/app/practice",         label: "Practice", icon: Layers },
+  { key: "chat",     href: "/app/chat",             label: "AI Chat",  icon: MessageSquare },
+  { key: "syllabus", href: "/app/syllabus",         label: "Syllabus", icon: GraduationCap },
+  { key: "calendar", href: "/app/calendar",         label: "Calendar", icon: CalendarClock },
+  { key: "help",     href: "/app/help",             label: "Helper",   icon: HelpCircle },
 ] as const;
 
 export function activeShortcutKey(pathname: string): string | null {
