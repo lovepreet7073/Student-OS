@@ -59,7 +59,19 @@ export async function createConversation(
     .single();
 
   if (insertRes.error || !insertRes.data) {
-    return err({ code: "DB", message: "Couldn't start the chat." });
+    // Surface the underlying Postgres error so a missing migration
+    // (e.g. `chat_conversations` doesn't exist in prod Supabase) or an
+    // RLS block shows the actual reason instead of a generic toast.
+    const detail = insertRes.error?.message ?? "unknown error";
+    console.error("[createConversation] insert failed", {
+      code: insertRes.error?.code,
+      message: insertRes.error?.message,
+      hint: insertRes.error?.hint,
+    });
+    return err({
+      code: "DB",
+      message: `Couldn't start the chat: ${detail}`,
+    });
   }
 
   const conversationId = insertRes.data.id;
@@ -73,7 +85,14 @@ export async function createConversation(
 
   if (msgErr) {
     await supabase.from("chat_conversations").delete().eq("id", conversationId);
-    return err({ code: "DB", message: "Couldn't save your message." });
+    console.error("[createConversation] message insert failed", {
+      code: msgErr.code,
+      message: msgErr.message,
+    });
+    return err({
+      code: "DB",
+      message: `Couldn't save your message: ${msgErr.message}`,
+    });
   }
 
   revalidatePath("/app/chat");
