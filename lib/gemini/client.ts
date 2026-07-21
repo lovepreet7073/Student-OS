@@ -23,3 +23,19 @@ export function getGeminiModel(
     },
   });
 }
+
+/**
+ * Prose-output model — for streaming chat, doubt answers, and other
+ * free-form responses. Does NOT set `responseMimeType: application/json`
+ * so Gemini returns natural language instead of a JSON blob.
+ */
+export function getGeminiChatModel(
+  model: GeminiModelName = "gemini-1.5-flash",
+): GenerativeModel {
+  return getClient().getGenerativeModel({
+    model,
+    generationConfig: {
+      temperature: 0.7,
+    },
+  });
+}

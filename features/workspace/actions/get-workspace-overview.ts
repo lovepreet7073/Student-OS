@@ -48,6 +48,7 @@ export async function getWorkspaceOverview(): Promise<
     flashcardsDueToday,
     bookmarkedFiles,
     communityBookmarks,
+    chatConversations,
   ] = await Promise.all([
     countOf(
       supabase
@@ -171,6 +172,15 @@ export async function getWorkspaceOverview(): Promise<
         error: unknown;
       }>,
     ),
+    countOf(
+      supabase
+        .from("chat_conversations")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id) as unknown as Promise<{
+        count: number | null;
+        error: unknown;
+      }>,
+    ),
   ]);
 
   return ok({
@@ -184,5 +194,6 @@ export async function getWorkspaceOverview(): Promise<
     sharedToCommunity: community,
     flashcardDecks,
     flashcardsDueToday,
+    chatConversations,
   });
 }

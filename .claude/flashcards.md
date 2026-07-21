@@ -124,10 +124,28 @@ against `flashcard_reviews`: total, correct, last-7-days. Retention is
 `null` (rendered as "—") when the deck has zero reviews so we don't
 falsely imply the student failed everything.
 
+## Weak cards list (Module 38)
+
+Deck detail groups cards where `total_reviews >= 3` and
+`lapses / total_reviews > 0.3` into a "Needs more practice" section
+above the full card list. Pure client-side filter over the same
+`deck.cards` array — no extra query. Threshold is intentionally
+conservative so a single lapse doesn't tag a card as weak.
+
+## Review streak heatmap (Module 39)
+
+`/app/flashcards` renders a 12-week GitHub-style heatmap plus current
+and longest streaks, backed by `getReviewHeatmap(spanDays = 84)`.
+Grouping runs in JS at the action layer — same trade-off as the teacher
+daily-activity query (ADR-0025). Streak = consecutive days ending today
+where at least one review happened. Empty when the audit table is empty,
+so brand-new students see a helpful "Study any deck and your streak
+starts here" prompt instead of a bare grid.
+
 ## Enhancement ideas
 
 1. **Voice-first review** — TTS the front, microphone the answer, transcribe + auto-mark against `back`.
 2. **Anki export** — dump a deck as a `.apkg` for students who already run Anki elsewhere.
 3. **Interleaved cross-subject inbox filter** — "just Math today" toggle on the inbox route.
-4. **Per-card retention** — surface individual cards with retention < 50% as a "weak cards" list.
-5. **Streak & study calendar** — heatmap of `flashcard_reviews` per day.
+4. **Streak notifications** — remind the student before their streak breaks (needs a push-notification pipeline).
+5. **Weak-cards-only session** — a review-inbox variant that pulls just cards over the lapse threshold.

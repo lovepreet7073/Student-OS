@@ -32,6 +32,7 @@ export interface WorkspaceOverview {
   sharedToCommunity: number;
   flashcardDecks: number;
   flashcardsDueToday: number;
+  chatConversations: number;
 }
 
 export interface WorkspaceCategory {

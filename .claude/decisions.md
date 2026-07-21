@@ -4,6 +4,45 @@ Append-only log of architectural decisions. Newest at the top. Every entry: **da
 
 ---
 
+## ADR-0026 · 2026-07-21 · Chat streams over an API route; one-shot mutations stay Server Actions
+
+**Decision:** The Module 37 AI chat feature uses a single API route
+(`POST /api/chat`) for the message + stream + persist path. Every other
+chat mutation (create conversation, delete conversation) stays a Server
+Action like the rest of the codebase.
+
+**Why:**
+1. Next 15 Server Actions finalise their response as a single JSON
+   payload. `ReadableStream` can't be returned. Chat UX is streaming-first
+   — a two-second batched reply feels broken next to ChatGPT / Gemini
+   apps. Batching is not an option we can accept for this surface.
+2. The Server-Actions-first rule (ADR-0002) already carves out an
+   exception for streaming. Chat is exactly what that exception was
+   written for.
+3. Splitting the write path (Server Action for create/delete, API route
+   for stream+persist) keeps the API surface tiny. Only the streaming
+   token forwarder needs the route; everything else still gets end-to-end
+   types + revalidation from actions.
+4. The API route calls the SAME `getStudentContext()` and Supabase-server
+   helpers as the actions — no duplication. Auth + RLS behave identically.
+
+**Trade-off accepted:** the streaming client (`<ChatView>`) hand-rolls a
+`fetch → getReader → decoder` loop instead of a typed action call. That
+loop is ~15 lines and lives in one file — a fair price to pay for a
+first-class chat UX.
+
+**Alternatives considered:**
+- **All Server Actions, no streaming**: batched reply feels broken;
+  users would abandon chats > 3s to generate.
+- **All API routes for chat**: adds two more route files (POST create,
+  DELETE delete) with the same auth/validation boilerplate the actions
+  already give us. No offsetting gain.
+- **SSE via a Route Handler that returns `text/event-stream`**: we're
+  already streaming plain text; SSE adds framing overhead without
+  buying reconnection semantics we don't need.
+
+---
+
 ## ADR-0025 · 2026-07-21 · Flashcard reviews get their own audit table; SM-2 state stays on the card
 
 **Decision:** `flashcard_reviews` (Module 34) is a separate append-only

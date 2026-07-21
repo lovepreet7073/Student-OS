@@ -155,6 +155,15 @@ translated in `en` + `pa`. Feature-detail surfaces (tasks, quizzes, planner,
 test evals, moderation, dialogs) still hold English strings — sweep them in
 Module 13.5.
 
+## AI Study Chat
+
+See `chat.md` — Module 37. First streaming AI feature. Multi-turn
+conversations persisted in `chat_conversations` + `chat_messages`.
+Stream+persist runs through `POST /api/chat` (Server Actions can't
+stream); one-shot mutations (create, delete) stay Server Actions. Uses
+new `getGeminiChatModel()` helper (prose output, no `application/json`).
+See ADR-0026 for why the API route is the right exception.
+
 ## AI Flashcards + Spaced Repetition
 
 See `flashcards.md` — Module 28. Fourth AI feature; same

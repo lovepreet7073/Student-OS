@@ -5,13 +5,15 @@ import { Flame, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/error-state";
 import { listDecks } from "@/features/flashcards/actions/list-decks";
+import { getReviewHeatmap } from "@/features/flashcards/actions/get-review-heatmap";
 import { DeckEmptyState } from "@/features/flashcards/components/deck-empty-state";
 import { DeckList } from "@/features/flashcards/components/deck-list";
+import { ReviewHeatmap } from "@/features/flashcards/components/review-heatmap";
 
 export const metadata: Metadata = { title: "Flashcards" };
 
 export default async function FlashcardsPage() {
-  const result = await listDecks();
+  const [result, heatmap] = await Promise.all([listDecks(), getReviewHeatmap()]);
   const totalDueOrNew = !result.ok
     ? 0
     : result.data.reduce((sum, d) => sum + d.dueCards + d.newCards, 0);
@@ -51,6 +53,15 @@ export default async function FlashcardsPage() {
             </Link>
           </Button>
         </div>
+      ) : null}
+
+      {heatmap.ok && heatmap.data.totalReviews > 0 ? (
+        <section
+          aria-label="Review streak"
+          className="mt-5 rounded-xl border border-border bg-card p-4"
+        >
+          <ReviewHeatmap heatmap={heatmap.data} />
+        </section>
       ) : null}
 
       <section aria-label="Deck list" className="pt-5">

@@ -129,6 +129,50 @@ export function DeckDetailView({ deck, stats }: DeckDetailViewProps) {
         </div>
       )}
 
+      {(() => {
+        const weakCards = deck.cards.filter(
+          (c) => c.totalReviews >= 3 && c.lapses / c.totalReviews > 0.3,
+        );
+        if (weakCards.length === 0) return null;
+        return (
+          <section aria-label="Weak cards" className="mt-8">
+            <div className="mb-2 flex items-center gap-2">
+              <Flame
+                className="h-4 w-4 text-warning"
+                strokeWidth={2}
+                aria-hidden
+              />
+              <h2 className="text-[13px] font-bold uppercase tracking-wider text-warning">
+                Needs more practice ({weakCards.length})
+              </h2>
+            </div>
+            <p className="mb-3 text-[12.5px] text-muted-foreground">
+              You&apos;ve slipped on these more than a third of the time. They&apos;ll
+              come around often in your review queue.
+            </p>
+            <ul className="flex flex-col gap-2">
+              {weakCards.map((c) => (
+                <li
+                  key={c.id}
+                  className="rounded-lg border border-warning/30 bg-warning/5 p-3.5"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="text-[11px] font-bold text-warning/80">
+                      #{c.ordinal}
+                    </span>
+                    <span className="text-[11px] font-semibold text-warning">
+                      {c.lapses}/{c.totalReviews} missed
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[14px] font-bold tracking-tight">{c.front}</p>
+                  <p className="mt-1 text-[13.5px] text-muted-foreground">{c.back}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+      })()}
+
       <section aria-label="All cards" className="mt-8">
         <h2 className="mb-3 text-[13px] font-bold uppercase tracking-wider text-muted-foreground">
           All cards ({total})

@@ -9,6 +9,7 @@ import {
   FileText,
   GraduationCap,
   Layers,
+  MessageSquare,
   Trophy,
   Users,
 } from "lucide-react";
@@ -101,6 +102,14 @@ export async function CategoryGrid({ overview }: Props) {
           : null,
       unitKey: "decks",
       tone: "primary" as const,
+    },
+    {
+      key: "chat",
+      icon: MessageSquare,
+      href: "/app/chat",
+      count: overview.chatConversations,
+      unitKey: "chats",
+      tone: "info" as const,
     },
     {
       key: "plan",
