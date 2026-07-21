@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { DesktopSidebar } from "./desktop-sidebar";
+import { GlobalShortcuts } from "./global-shortcuts";
 import { MobileBottomNav } from "./mobile-bottom-nav";
 
 interface AppShellProps {
@@ -25,6 +26,7 @@ export function AppShell({ children }: AppShellProps) {
         {children}
       </main>
       <MobileBottomNav />
+      <GlobalShortcuts />
     </div>
   );
 }

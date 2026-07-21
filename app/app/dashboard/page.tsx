@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { ContinueHero } from "@/features/dashboard/components/continue-hero";
 import { Fab } from "@/features/dashboard/components/fab";
 import { GreetingHeader } from "@/features/dashboard/components/greeting-header";
+import { PracticeDueCard } from "@/features/dashboard/components/practice-due-card";
 import { StreakCard } from "@/features/dashboard/components/streak-card";
 import { SubjectsGrid } from "@/features/dashboard/components/subjects-grid";
 import { TodaysPlan } from "@/features/dashboard/components/todays-plan";
@@ -12,14 +12,21 @@ import { getStreakStats } from "@/features/dashboard/actions/get-streak-stats";
 import { listExams } from "@/features/exams/actions/list-exams";
 import { ExamCountdownCard } from "@/features/exams/components/exam-countdown-card";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "Today" };
 
 /**
- * Home dashboard — the "Today" view. Everything here is about what to do
- * RIGHT NOW: streak (motivation), continue where you left off, today's plan,
- * subject quick-nav. Content browsing lives on /app/workspace.
+ * Today — the ONE page a student opens at 9 PM to know what to do.
+ *
+ * Order matters. Each section either shows real work or hides itself.
+ * A brand-new student sees: greeting → streak → subjects. A returning
+ * student adds: exams → practice due → tasks → sessions. Nothing on
+ * this page is decoration; every card answers "what should I do now?"
+ *
+ * The old ContinueHero was removed because it was hardcoded ("Welcome,
+ * $name") — a real Continue needs a `recently_opened` query. That's a
+ * follow-up when we wire the activity feed into a proper "resume" card.
  */
-export default async function DashboardPage() {
+export default async function TodayPage() {
   const [profile, streakResult, examsResult] = await Promise.all([
     getMyProfile(),
     getStreakStats(),
@@ -27,7 +34,6 @@ export default async function DashboardPage() {
   ]);
   if (!profile) return null;
 
-  const firstSubjectName = profile.subjects[0]?.name ?? profile.classLevel.name;
   const streak = streakResult.ok ? streakResult.data : null;
   const exams = examsResult.ok ? examsResult.data : [];
 
@@ -38,21 +44,16 @@ export default async function DashboardPage() {
         streakDays={streak?.current ?? 0}
       />
 
-      <div className="flex flex-col gap-6 pt-4 sm:gap-8 sm:pt-6">
+      <div className="flex flex-col gap-5 pt-4 sm:gap-6 sm:pt-6">
         {streak ? <StreakCard stats={streak} /> : null}
 
         <ExamCountdownCard exams={exams} subjects={profile.subjects} />
 
-        <ContinueHero
-          chapterTitle={`Welcome, ${profile.displayName.split(" ")[0]}`}
-          subjectName={firstSubjectName}
-          chapterIndex={1}
-          progressPct={0}
-        />
-
-        <TodaysSessions />
+        <PracticeDueCard />
 
         <TodaysPlan />
+
+        <TodaysSessions />
 
         <SubjectsGrid subjects={profile.subjects} />
       </div>

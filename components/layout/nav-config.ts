@@ -12,9 +12,6 @@ import {
   Layers,
   LayoutGrid,
   MessageSquare,
-  Sparkles,
-  Timer,
-  Trophy,
   Users,
   UserCircle2,
 } from "lucide-react";
@@ -78,19 +75,24 @@ export interface ShortcutItem {
   icon: LucideIcon;
 }
 
+/**
+ * Pruned to daily-usage items only. Doubt Solver, Focus Timer,
+ * Bookmarks, Achievements, and Study Planner still exist and are
+ * reachable via their direct URLs (and via Workspace tiles) — they
+ * just don't earn a sidebar slot. A student's evening loop is:
+ * Today → Library or Practice → AI help. Everything else is a
+ * *sometimes* action, not an every-day one.
+ */
 export const APP_SHORTCUTS: readonly ShortcutItem[] = [
-  { key: "library",      href: "/app/library",      label: "My Study Space", icon: FileText },
-  { key: "tasks",        href: "/app/tasks",        label: "Tasks",          icon: ClipboardList },
-  { key: "study",        href: "/app/study",        label: "AI Quizzes",     icon: BookOpen },
-  { key: "flashcards",   href: "/app/flashcards",   label: "Flashcards",     icon: Layers },
-  { key: "chat",         href: "/app/chat",         label: "AI Chat",        icon: MessageSquare },
-  { key: "planner",      href: "/app/planner",      label: "Study Planner",  icon: Sparkles },
-  { key: "tests",        href: "/app/tests",        label: "Test Evals",     icon: ClipboardCheck },
-  { key: "syllabus",     href: "/app/syllabus",     label: "Syllabus",       icon: GraduationCap },
-  { key: "calendar",     href: "/app/calendar",     label: "Calendar",       icon: CalendarClock },
-  { key: "focus",        href: "/app/focus",        label: "Focus Timer",    icon: Timer },
-  { key: "achievements", href: "/app/achievements", label: "Achievements",   icon: Trophy },
-  { key: "help",         href: "/app/help",         label: "Helper",         icon: HelpCircle },
+  { key: "library",    href: "/app/library",    label: "My Study Space", icon: FileText },
+  { key: "tasks",      href: "/app/tasks",      label: "Tasks",          icon: ClipboardList },
+  { key: "flashcards", href: "/app/flashcards", label: "Flashcards",     icon: Layers },
+  { key: "study",      href: "/app/study",      label: "Quizzes",        icon: BookOpen },
+  { key: "tests",      href: "/app/tests",      label: "Test Evals",     icon: ClipboardCheck },
+  { key: "chat",       href: "/app/chat",       label: "AI Chat",        icon: MessageSquare },
+  { key: "syllabus",   href: "/app/syllabus",   label: "Syllabus",       icon: GraduationCap },
+  { key: "calendar",   href: "/app/calendar",   label: "Calendar",       icon: CalendarClock },
+  { key: "help",       href: "/app/help",       label: "Helper",         icon: HelpCircle },
 ] as const;
 
 export function activeShortcutKey(pathname: string): string | null {
