@@ -117,7 +117,6 @@ export async function submitForEvaluation(
       images: images.data,
       schema: geminiTestEvaluationResponseSchema,
       maxRetries: 1,
-      model: "gemini-1.5-flash",
     });
   } catch (e) {
     const message =

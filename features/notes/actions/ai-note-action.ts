@@ -61,7 +61,7 @@ export async function runNoteAiAction(
     : noteRes.data.subject;
 
   try {
-    const model = getGeminiModel("gemini-1.5-flash");
+    const model = getGeminiModel();
     const prompt = buildNoteAiPrompt({
       profile,
       subjectName: subject?.name ?? "General",

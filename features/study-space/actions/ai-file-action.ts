@@ -77,7 +77,7 @@ export async function runFileAiAction(
   const subject = Array.isArray(file.subject) ? file.subject[0] : file.subject;
 
   try {
-    const model = getGeminiModel("gemini-1.5-flash");
+    const model = getGeminiModel();
     const prompt = buildFileAiPrompt({
       profile,
       subjectName: subject?.name ?? "General",

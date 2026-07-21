@@ -62,7 +62,7 @@ export async function askDoubt(
   // 2. Ask Gemini. Any failure flips the row to `failed` — never leaves it
   //    dangling as `processing`.
   try {
-    const model = getGeminiModel("gemini-1.5-flash");
+    const model = getGeminiModel();
     const prompt = buildDoubtPrompt({
       profile,
       subjectName: subject?.name ?? null,

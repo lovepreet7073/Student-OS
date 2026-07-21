@@ -56,7 +56,7 @@ export async function POST(request: Request): Promise<Response> {
     })),
   ];
 
-  const model = getGeminiChatModel("gemini-1.5-flash");
+  const model = getGeminiChatModel();
   const chat = model.startChat({ history });
   const encoder = new TextEncoder();
 
