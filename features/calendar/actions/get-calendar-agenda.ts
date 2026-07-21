@@ -70,7 +70,7 @@ export async function getCalendarAgenda(
     supabase
       .from("study_plan_items")
       .select(
-        `id, plan_id, plan_date, topic, subject_name, duration_minutes, is_completed`,
+        `id, plan_id, plan_date, topic, subject_name, duration_minutes, completed_at`,
       )
       .eq("user_id", user.id)
       .gte("plan_date", startIso)
@@ -130,7 +130,9 @@ export async function getCalendarAgenda(
     });
   }
   for (const row of sessionsRes.data ?? []) {
-    if (row.is_completed) continue; // hide completed sessions
+    // Hide completed sessions — schema uses a nullable completed_at
+    // timestamp, not a boolean. Any non-null value = completed.
+    if (row.completed_at !== null) continue;
     push(row.plan_date, {
       id: `session-${row.id}`,
       type: "study_session",
