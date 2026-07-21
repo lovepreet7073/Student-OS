@@ -24,7 +24,8 @@ export interface WorkspaceOverview {
   notes: number;
   files: number;
   tasks: { total: number; openToday: number };
-  bookmarkedNotes: number;
+  /** Sum across every bookmark source: notes + study_files + community_bookmarks. */
+  bookmarkedTotal: number;
   quizzes: number;
   studyPlanActive: boolean;
   testEvaluations: number;

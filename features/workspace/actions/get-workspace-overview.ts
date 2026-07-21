@@ -46,6 +46,8 @@ export async function getWorkspaceOverview(): Promise<
     community,
     flashcardDecks,
     flashcardsDueToday,
+    bookmarkedFiles,
+    communityBookmarks,
   ] = await Promise.all([
     countOf(
       supabase
@@ -150,13 +152,32 @@ export async function getWorkspaceOverview(): Promise<
         error: unknown;
       }>,
     ),
+    countOf(
+      supabase
+        .from("study_files")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("is_bookmarked", true) as unknown as Promise<{
+        count: number | null;
+        error: unknown;
+      }>,
+    ),
+    countOf(
+      supabase
+        .from("community_bookmarks")
+        .select("community_note_id", { count: "exact", head: true })
+        .eq("user_id", user.id) as unknown as Promise<{
+        count: number | null;
+        error: unknown;
+      }>,
+    ),
   ]);
 
   return ok({
     notes,
     files,
     tasks: { total: tasksTotal, openToday: tasksOpenToday },
-    bookmarkedNotes: bookmarks,
+    bookmarkedTotal: bookmarks + bookmarkedFiles + communityBookmarks,
     quizzes,
     studyPlanActive: activePlan,
     testEvaluations: evaluations,

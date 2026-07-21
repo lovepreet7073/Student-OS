@@ -9,6 +9,7 @@ import type { NoteListItem } from "../types";
 import { AiActionsMenu } from "./ai-actions-menu";
 import { BookmarkToggleButton } from "./bookmark-toggle-button";
 import { DeleteNoteDialog } from "./delete-note-dialog";
+import { MakeFlashcardsButton } from "./make-flashcards-button";
 import { ShareNoteDialog } from "./share-note-dialog";
 
 interface NoteDetailViewProps {
@@ -51,7 +52,14 @@ export function NoteDetailView({ note }: NoteDetailViewProps) {
           <ShareToCommunityButton noteId={note.id} />
           <DeleteNoteDialog noteId={note.id} noteTitle={note.title} />
         </div>
-        <AiActionsMenu noteId={note.id} />
+        <div className="flex flex-wrap items-center gap-2">
+          <AiActionsMenu noteId={note.id} />
+          <MakeFlashcardsButton
+            noteId={note.id}
+            subjectId={note.subjectId}
+            noteTitle={note.title}
+          />
+        </div>
       </header>
 
       <section

@@ -13,9 +13,19 @@ import { reviewCard } from "../actions/review-card";
 import type { Flashcard, ReviewQuality } from "../types";
 
 interface ReviewSessionProps {
-  deckId: string;
+  /**
+   * Title shown on the session-complete screen. For a single deck this is
+   * the deck's title; for the cross-deck inbox pass "Review inbox".
+   */
   deckTitle: string;
   cards: Flashcard[];
+  /**
+   * Where the top-nav exit button and the "back" button on the finish
+   * screen go. Defaults to the flashcards index. Per-deck sessions pass
+   * `/app/flashcards/{deckId}`.
+   */
+  exitHref?: string;
+  exitLabel?: string;
 }
 
 /**
@@ -30,7 +40,12 @@ interface ReviewSessionProps {
  * during the session (e.g. student tapped "Again"), we re-append it to the
  * end of the queue so the loop terminates deterministically.
  */
-export function ReviewSession({ deckId, deckTitle, cards }: ReviewSessionProps) {
+export function ReviewSession({
+  deckTitle,
+  cards,
+  exitHref = "/app/flashcards",
+  exitLabel = "Back to deck",
+}: ReviewSessionProps) {
   const router = useRouter();
 
   const initialQueue = useMemo(() => cards.map((c) => c.id), [cards]);
@@ -97,7 +112,7 @@ export function ReviewSession({ deckId, deckTitle, cards }: ReviewSessionProps) 
             size="lg"
             onClick={() => router.refresh()}
           >
-            <Link href={`/app/flashcards/${deckId}`}>Back to deck</Link>
+            <Link href={exitHref}>{exitLabel}</Link>
           </Button>
           <Button
             asChild
@@ -119,7 +134,7 @@ export function ReviewSession({ deckId, deckTitle, cards }: ReviewSessionProps) 
         className="mb-4 flex items-center justify-between gap-3"
       >
         <Button asChild variant="outline" size="icon" aria-label="Exit">
-          <Link href={`/app/flashcards/${deckId}`}>
+          <Link href={exitHref}>
             <ArrowLeft className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
           </Link>
         </Button>

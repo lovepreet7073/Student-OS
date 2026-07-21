@@ -94,10 +94,26 @@ Not added to the 5-item nav (that's locked). Access via Workspace tile.
 - **Custom SM-2 tuning** — no user-adjustable ease multiplier, initial ease, or graduating interval. Fine for MVP; power users get Anki.
 - **Streaming generation** — batch Gemini call. 15–30 s wait with a "AI is thinking" hint.
 
+## Cross-deck review inbox (Module 31)
+
+`/app/flashcards/inbox` runs one `listDueCards()` query — every card the
+user owns where `due_at <= now()`, ordered by `due_at asc`, capped at 60.
+Reuses the same `<ReviewSession>` component with `exitHref="/app/flashcards"`.
+Because `reviewCard` looks up `deck_id` from the row and revalidates that
+deck's path, per-deck views stay in sync automatically. A `Flame`-badged
+CTA at the top of `/app/flashcards` links here when any card is due.
+
+## From-note generation (Module 32)
+
+`<MakeFlashcardsButton>` on the note detail deep-links to
+`/app/flashcards/new?subject=<id>&topic=<title>&noteId=<id>`. The
+generator prefills its form; `generateDeck` sees `sourceNoteId`, loads
+the note body via RLS, and passes it to the prompt as `sourceText` — the
+AI must extract cards from that content, not general knowledge.
+
 ## Enhancement ideas
 
-1. **Cross-deck review inbox** — `/app/flashcards/review` that pulls all due cards from every deck.
-2. **`flashcard_reviews` audit table** for retention analytics per card / per deck.
-3. **From-note deep-link** — a "Make flashcards" action on the note reader that opens the generator with `sourceNoteId` prefilled.
-4. **Voice-first review** — TTS the front, microphone the answer, transcribe + auto-mark against `back`.
-5. **Anki export** — dump a deck as a `.apkg` for students who already run Anki elsewhere.
+1. **`flashcard_reviews` audit table** for retention analytics per card / per deck.
+2. **Voice-first review** — TTS the front, microphone the answer, transcribe + auto-mark against `back`.
+3. **Anki export** — dump a deck as a `.apkg` for students who already run Anki elsewhere.
+4. **Interleaved cross-subject inbox filter** — "just Math today" toggle on the inbox route.

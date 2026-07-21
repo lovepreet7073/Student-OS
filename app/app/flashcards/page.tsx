@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Sparkles } from "lucide-react";
+import { Flame, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/error-state";
@@ -12,6 +12,9 @@ export const metadata: Metadata = { title: "Flashcards" };
 
 export default async function FlashcardsPage() {
   const result = await listDecks();
+  const totalDueOrNew = !result.ok
+    ? 0
+    : result.data.reduce((sum, d) => sum + d.dueCards + d.newCards, 0);
 
   return (
     <div className="mx-auto max-w-[780px] px-5 pb-10 sm:px-7 lg:max-w-[1140px] lg:px-11">
@@ -38,6 +41,17 @@ export default async function FlashcardsPage() {
           </Button>
         </div>
       </header>
+
+      {totalDueOrNew > 0 ? (
+        <div className="mt-4">
+          <Button asChild fullWidth size="lg" className="gap-2">
+            <Link href="/app/flashcards/inbox">
+              <Flame className="h-4 w-4" aria-hidden />
+              Review {totalDueOrNew} due across all decks
+            </Link>
+          </Button>
+        </div>
+      ) : null}
 
       <section aria-label="Deck list" className="pt-5">
         {!result.ok ? (

@@ -78,7 +78,7 @@ export async function CategoryGrid({ overview }: Props) {
       key: "bookmarks",
       icon: Bookmark,
       href: "/app/bookmarks",
-      count: overview.bookmarkedNotes,
+      count: overview.bookmarkedTotal,
       unitKey: "bookmarks",
       tone: "info" as const,
     },

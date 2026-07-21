@@ -43,17 +43,19 @@ Not added to the 5-item nav. The Workspace tile "Bookmarks" now points at
 ## What this module does NOT do
 
 - **Cross-source folders / collections** — bookmarks are a flat list per source.
-- **Bookmark counts per source in the workspace tile** — the tile shows only
-  the notes bookmark count (`overview.bookmarkedNotes`) to avoid changing the
-  overview contract. A follow-up can extend it to a sum.
 - **Persistent tab selection** — the last tab isn't remembered across visits.
   Trivial to add via localStorage if the UX warrants it.
 
+## Module 33 follow-up (aggregate count)
+
+`WorkspaceOverview` now exposes `bookmarkedTotal` — the sum of notes +
+study_files + community_bookmarks — and the Workspace bookmarks tile reads
+that field. The old per-source `bookmarkedNotes` was removed since no other
+surface depended on it.
+
 ## Enhancement ideas
 
-1. **Aggregate count in Workspace tile** — sum notes + files + community
-   bookmarked into one number and drop the standalone community stat.
-2. **Search inside bookmarks** — reuse the `/app/search` ILIKE pattern scoped
+1. **Search inside bookmarks** — reuse the `/app/search` ILIKE pattern scoped
    to bookmarked rows.
-3. **Bulk unbookmark** — checkbox mode for clearing stale saves.
-4. **Sort options** — currently newest first; add "By title / By subject".
+2. **Bulk unbookmark** — checkbox mode for clearing stale saves.
+3. **Sort options** — currently newest first; add "By title / By subject".

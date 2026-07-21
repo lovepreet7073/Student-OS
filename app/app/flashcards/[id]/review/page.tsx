@@ -56,9 +56,10 @@ export default async function ReviewPage({ params }: ReviewPageProps) {
 
   return (
     <ReviewSession
-      deckId={result.data.id}
       deckTitle={result.data.title}
       cards={queue}
+      exitHref={`/app/flashcards/${result.data.id}`}
+      exitLabel="Back to deck"
     />
   );
 }
