@@ -41,9 +41,16 @@ import { editMessage } from "../actions/edit-message";
 import { prepareRegenerate } from "../actions/prepare-regenerate";
 import { useVoiceInput } from "../hooks/use-voice-input";
 import { AttachmentThumb } from "./attachment-thumb";
+import { EditableChatTitle } from "./editable-chat-title";
 import { SaveAsNoteButton } from "./save-as-note-button";
 import { SaveChatAsNoteButton } from "./save-chat-as-note-button";
 import type { ChatAttachment, ChatConversationWithMessages, ChatMessage } from "../types";
+
+/**
+ * Max attachments per message. Matches the Zod schema cap in
+ * `schemas/chat.ts` — bumping one requires bumping the other.
+ */
+const MAX_ATTACHMENTS = 4;
 
 interface Props {
   conversation: ChatConversationWithMessages;
@@ -78,12 +85,11 @@ export function ChatView({ conversation, subjects }: Props) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  // One attachment per outgoing message (v1). `pending` holds the picked
-  // file + a local preview URL until it's either uploaded or discarded.
-  const [attachment, setAttachment] = useState<{
-    file: File;
-    previewUrl: string;
-  } | null>(null);
+  // Up to `MAX_ATTACHMENTS` pending files per outgoing message. Each entry
+  // holds the picked File + a local blob URL for preview until upload.
+  const [attachments, setAttachments] = useState<
+    { file: File; previewUrl: string }[]
+  >([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -109,11 +115,16 @@ export function ChatView({ conversation, subjects }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const autoTriggeredRef = useRef(false);
 
+  // Revoke every blob URL that ever passed through state on unmount so we
+  // don't leak. We deliberately don't do this in a per-attachment cleanup
+  // effect — removing one attachment shouldn't revoke a URL another entry
+  // still holds.
   useEffect(() => {
     return () => {
-      if (attachment) URL.revokeObjectURL(attachment.previewUrl);
+      attachments.forEach((a) => URL.revokeObjectURL(a.previewUrl));
     };
-  }, [attachment]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     const el = scrollRef.current;
@@ -191,48 +202,82 @@ export function ChatView({ conversation, subjects }: Props) {
   }, [shouldAutoStart, messages, streamAssistant]);
 
   function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 25 * 1024 * 1024) {
-      toast.error("File is larger than 25 MB.");
+    const picked = Array.from(e.target.files ?? []);
+    if (picked.length === 0) return;
+
+    const room = MAX_ATTACHMENTS - attachments.length;
+    if (room <= 0) {
+      toast.error(`Max ${MAX_ATTACHMENTS} attachments per message.`);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
-    if (attachment) URL.revokeObjectURL(attachment.previewUrl);
-    setAttachment({ file, previewUrl: URL.createObjectURL(file) });
+
+    const accepted: { file: File; previewUrl: string }[] = [];
+    let rejectedTooLarge = 0;
+    for (const file of picked.slice(0, room)) {
+      if (file.size > 25 * 1024 * 1024) {
+        rejectedTooLarge += 1;
+        continue;
+      }
+      accepted.push({ file, previewUrl: URL.createObjectURL(file) });
+    }
+    if (rejectedTooLarge > 0) {
+      toast.error(
+        `Skipped ${rejectedTooLarge} file${rejectedTooLarge === 1 ? "" : "s"} over 25 MB.`,
+      );
+    }
+    if (accepted.length > 0) {
+      setAttachments((prev) => [...prev, ...accepted]);
+    }
+    if (picked.length > room) {
+      toast.error(`Only ${room} more attachment${room === 1 ? "" : "s"} allowed.`);
+    }
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
-  function onClearAttachment() {
-    if (attachment) URL.revokeObjectURL(attachment.previewUrl);
-    setAttachment(null);
+  function onRemoveAttachment(previewUrl: string) {
+    setAttachments((prev) => {
+      const target = prev.find((a) => a.previewUrl === previewUrl);
+      if (target) URL.revokeObjectURL(target.previewUrl);
+      return prev.filter((a) => a.previewUrl !== previewUrl);
+    });
   }
 
-  async function uploadAttachment(): Promise<ChatAttachment | null> {
-    if (!attachment) return null;
+  function onClearAllAttachments() {
+    attachments.forEach((a) => URL.revokeObjectURL(a.previewUrl));
+    setAttachments([]);
+  }
+
+  async function uploadAttachments(): Promise<ChatAttachment[] | null> {
+    if (attachments.length === 0) return [];
     setUploading(true);
     try {
-      const mimeType = attachment.file.type;
-      const begin = await beginAttachmentUpload({
-        conversationId: conversation.id,
-        mimeType,
-      });
-      if (!begin.ok) {
-        toast.error(begin.error.message);
-        return null;
+      const uploaded: ChatAttachment[] = [];
+      for (const item of attachments) {
+        const mimeType = item.file.type;
+        const begin = await beginAttachmentUpload({
+          conversationId: conversation.id,
+          mimeType,
+        });
+        if (!begin.ok) {
+          toast.error(begin.error.message);
+          return null;
+        }
+        const putRes = await fetch(begin.data.uploadUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": mimeType,
+            "x-upsert": "false",
+          },
+          body: item.file,
+        });
+        if (!putRes.ok) {
+          toast.error("Upload failed. Try again.");
+          return null;
+        }
+        uploaded.push({ path: begin.data.path, mimeType });
       }
-      const putRes = await fetch(begin.data.uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": mimeType,
-          "x-upsert": "false",
-        },
-        body: attachment.file,
-      });
-      if (!putRes.ok) {
-        toast.error("Upload failed. Try again.");
-        return null;
-      }
-      return { path: begin.data.path, mimeType };
+      return uploaded;
     } finally {
       setUploading(false);
     }
@@ -242,15 +287,15 @@ export function ChatView({ conversation, subjects }: Props) {
     if (status === "streaming" || uploading) return;
     if (voice.listening) voice.stop();
     const trimmed = inputValue.trim();
-    const hasAttachment = attachment !== null;
-    if (trimmed.length === 0 && !hasAttachment) return;
+    const hasAttachments = attachments.length > 0;
+    if (trimmed.length === 0 && !hasAttachments) return;
 
     let uploadedAttachments: ChatAttachment[] | undefined;
-    if (hasAttachment) {
-      const uploaded = await uploadAttachment();
+    if (hasAttachments) {
+      const uploaded = await uploadAttachments();
       if (!uploaded) return;
-      uploadedAttachments = [uploaded];
-      onClearAttachment();
+      uploadedAttachments = uploaded;
+      onClearAllAttachments();
     }
 
     setInputValue("");
@@ -339,16 +384,11 @@ export function ChatView({ conversation, subjects }: Props) {
               <ArrowLeft className="h-[18px] w-[18px]" strokeWidth={2.2} aria-hidden />
             </Link>
           </Button>
-          <div className="flex min-w-0 flex-col">
-            <div className="truncate text-[15px] font-extrabold tracking-tight">
-              {conversation.title}
-            </div>
-            {conversation.subjectName ? (
-              <div className="text-[11px] font-bold uppercase tracking-wider text-primary">
-                {conversation.subjectName}
-              </div>
-            ) : null}
-          </div>
+          <EditableChatTitle
+            conversationId={conversation.id}
+            title={conversation.title}
+            subjectName={conversation.subjectName}
+          />
         </div>
         <div className="flex items-center gap-1">
           {subjects.length > 0 && messages.length > 0 ? (
@@ -426,38 +466,45 @@ export function ChatView({ conversation, subjects }: Props) {
             </span>
           </div>
         ) : null}
-        {attachment ? (
-          <div className="mb-2 flex items-start gap-2 rounded-lg border border-border bg-card p-2">
-            {attachment.file.type.startsWith("image/") ? (
-              // Local preview only — never persisted to the DOM after send.
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={attachment.previewUrl}
-                alt="Attachment preview"
-                className="h-16 w-16 rounded-md object-cover"
-              />
-            ) : (
-              <span
-                aria-hidden
-                className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-md bg-brand-accent/15 text-brand-accent"
+        {attachments.length > 0 ? (
+          <div className="mb-2 flex flex-wrap gap-2">
+            {attachments.map((a) => (
+              <div
+                key={a.previewUrl}
+                className="relative flex flex-col items-center gap-1 rounded-lg border border-border bg-card p-1.5"
               >
-                <FileText className="h-6 w-6" strokeWidth={1.8} />
-              </span>
-            )}
-            <div className="flex flex-1 flex-col gap-0.5 text-[12px]">
-              <span className="truncate font-bold">{attachment.file.name}</span>
-              <span className="text-muted-foreground">
-                {(attachment.file.size / 1024).toFixed(0)} KB · will be sent to AI
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={onClearAttachment}
-              aria-label="Remove attachment"
-              className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <X className="h-4 w-4" aria-hidden />
-            </button>
+                {a.file.type.startsWith("image/") ? (
+                  // Local preview only — never persisted to the DOM after send.
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={a.previewUrl}
+                    alt="Attachment preview"
+                    className="h-14 w-14 rounded-md object-cover"
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-md bg-brand-accent/15 text-brand-accent"
+                  >
+                    <FileText className="h-5 w-5" strokeWidth={1.8} />
+                  </span>
+                )}
+                <span
+                  className="block w-14 truncate text-center text-[10.5px] font-semibold"
+                  title={a.file.name}
+                >
+                  {a.file.name}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveAttachment(a.previewUrl)}
+                  aria-label={`Remove ${a.file.name}`}
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <X className="h-3 w-3" aria-hidden />
+                </button>
+              </div>
+            ))}
           </div>
         ) : null}
         <div className="flex items-end gap-2">
@@ -465,6 +512,7 @@ export function ChatView({ conversation, subjects }: Props) {
             ref={fileInputRef}
             type="file"
             accept="image/png,image/jpeg,image/webp,application/pdf"
+            multiple
             className="sr-only"
             onChange={onPickImage}
           />
@@ -472,10 +520,12 @@ export function ChatView({ conversation, subjects }: Props) {
             type="button"
             variant="outline"
             size="icon"
-            aria-label="Attach image or PDF"
+            aria-label={`Attach image or PDF (${attachments.length}/${MAX_ATTACHMENTS})`}
             onClick={() => fileInputRef.current?.click()}
             disabled={
-              status === "streaming" || uploading || attachment !== null
+              status === "streaming" ||
+              uploading ||
+              attachments.length >= MAX_ATTACHMENTS
             }
           >
             <ImagePlus className="h-4 w-4" aria-hidden />
@@ -513,8 +563,8 @@ export function ChatView({ conversation, subjects }: Props) {
             placeholder={
               status === "streaming"
                 ? "Waiting for AI…"
-                : attachment
-                  ? "Add a question about this image (optional)…"
+                : attachments.length > 0
+                  ? "Add a question about these files (optional)…"
                   : "Ask anything. Shift+Enter for a new line."
             }
             rows={2}
@@ -530,7 +580,7 @@ export function ChatView({ conversation, subjects }: Props) {
             disabled={
               status === "streaming" ||
               uploading ||
-              (inputValue.trim().length === 0 && attachment === null)
+              (inputValue.trim().length === 0 && attachments.length === 0)
             }
             aria-label="Send message"
           >

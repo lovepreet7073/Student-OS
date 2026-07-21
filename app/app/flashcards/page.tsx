@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Flame, Sparkles } from "lucide-react";
+import { AlertTriangle, Flame, Sparkles } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/error-state";
 import { listDecks } from "@/features/flashcards/actions/list-decks";
 import { getReviewHeatmap } from "@/features/flashcards/actions/get-review-heatmap";
+import { listWeakCards } from "@/features/flashcards/actions/list-weak-cards";
 import { DeckEmptyState } from "@/features/flashcards/components/deck-empty-state";
 import { DeckList } from "@/features/flashcards/components/deck-list";
 import { ReviewHeatmap } from "@/features/flashcards/components/review-heatmap";
@@ -13,10 +14,15 @@ import { ReviewHeatmap } from "@/features/flashcards/components/review-heatmap";
 export const metadata: Metadata = { title: "Flashcards" };
 
 export default async function FlashcardsPage() {
-  const [result, heatmap] = await Promise.all([listDecks(), getReviewHeatmap()]);
+  const [result, heatmap, weakCards] = await Promise.all([
+    listDecks(),
+    getReviewHeatmap(),
+    listWeakCards(),
+  ]);
   const totalDueOrNew = !result.ok
     ? 0
     : result.data.reduce((sum, d) => sum + d.dueCards + d.newCards, 0);
+  const weakCount = weakCards.ok ? weakCards.data.length : 0;
 
   return (
     <div className="mx-auto max-w-[780px] px-5 pb-10 sm:px-7 lg:max-w-[1140px] lg:px-11">
@@ -44,14 +50,24 @@ export default async function FlashcardsPage() {
         </div>
       </header>
 
-      {totalDueOrNew > 0 ? (
-        <div className="mt-4">
-          <Button asChild fullWidth size="lg" className="gap-2">
-            <Link href="/app/flashcards/inbox">
-              <Flame className="h-4 w-4" aria-hidden />
-              Review {totalDueOrNew} due across all decks
-            </Link>
-          </Button>
+      {totalDueOrNew > 0 || weakCount > 0 ? (
+        <div className="mt-4 flex flex-col gap-2">
+          {totalDueOrNew > 0 ? (
+            <Button asChild fullWidth size="lg" className="gap-2">
+              <Link href="/app/flashcards/inbox">
+                <Flame className="h-4 w-4" aria-hidden />
+                Review {totalDueOrNew} due across all decks
+              </Link>
+            </Button>
+          ) : null}
+          {weakCount > 0 ? (
+            <Button asChild fullWidth size="lg" variant="outline" className="gap-2">
+              <Link href="/app/flashcards/weak">
+                <AlertTriangle className="h-4 w-4" aria-hidden />
+                Drill {weakCount} weak card{weakCount === 1 ? "" : "s"}
+              </Link>
+            </Button>
+          ) : null}
         </div>
       ) : null}
 

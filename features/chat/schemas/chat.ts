@@ -27,7 +27,7 @@ export const sendMessageSchema = z.object({
     .string()
     .trim()
     .max(4000, "Trim your message — keep it under 4000 characters"),
-  attachments: z.array(chatAttachmentSchema).max(1).optional(),
+  attachments: z.array(chatAttachmentSchema).max(4).optional(),
   /**
    * `send` (default): insert a new user message row, then stream a reply.
    * `regenerate`: assume the trailing user message is already in the DB

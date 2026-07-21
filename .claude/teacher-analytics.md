@@ -73,6 +73,15 @@ Grouping runs in JS at the action layer because Supabase JS doesn't
 expose GROUP BY without an RPC. At 30 days × ≤ 100 actions/day this is a
 rounding error; if it grows we swap in a `teacher_daily_activity` view.
 
+## Time-range toggle (Module 50)
+
+The daily-activity chart section gained a **30 days / 90 days / 1 year**
+segmented control. Options are plain `<Link>`s to
+`/app/teacher?range=<X>`; the server component reads `searchParams.range`,
+passes it to `getTeacherDailyActivity(range)`, and re-renders. No client
+fetch. `"all"` caps at 365 days for chart legibility — weekly bucketing
+is a follow-up if we ever ship yearly cohorts.
+
 ## Enhancement ideas
 
 1. **Median time-to-moderation** — surface how fast a teacher clears the queue.
@@ -80,4 +89,5 @@ rounding error; if it grows we swap in a `teacher_daily_activity` view.
 3. **Cohort comparison** — show this teacher's approval rate vs the average
    for the same board × class × medium.
 4. **Weekly digest email** — same data set, delivered Sundays via a cron job.
-5. **Longer time range toggle** — 30d / 90d / all-time switcher on the chart.
+5. **Weekly bucketing** — swap the 1-year daily grid for 52 weekly bars
+   when the range grows enough that daily is unreadable.

@@ -178,14 +178,29 @@ gets a `_[N attachments — see original chat]_` marker so the reader
 knows why the note might look incomplete. Success screen offers a
 direct link to the new note.
 
+## Chat rename (Module 47)
+
+`<EditableChatTitle>` replaces the static header title. Click reveals
+an inline `<input>`; Enter or blur saves via
+`renameConversation({ conversationId, title })`; Escape cancels. The
+Server Action revalidates both `/app/chat` and the current chat page
+so the sidebar and header stay in sync.
+
+## Multi-attachment messages (Module 48)
+
+`sendMessageSchema.attachments.max(1)` → `.max(4)`; the client picker
+gained the `multiple` attribute and a preview grid. Each thumb has an
+X to remove just that one. Blob URLs get revoked on removal and on
+component unmount so we don't leak between sessions. The API route
+already looped, so no server change was needed. `MAX_ATTACHMENTS = 4`
+in the component matches the schema — bumping one requires bumping
+the other.
+
 ## What this module does NOT do
 
 - **Rate limiting** — deferred until we see abuse.
-- **Conversation naming** — one-shot auto-title from the first message.
-  No rename UI in v1.
 - **Web search grounding** — Gemini's `googleSearchRetrieval` tool is
   out of scope; the assistant answers from its own training only.
-- **Multi-image attachments** — one attachment per message in v1.
 - **Re-sending prior attachments in history** — turn-local only (ADR-0027).
 - **Editing an already-attached image** — edit only rewrites text.
 - **Voice on Firefox** — Web Speech API not implemented there; button
@@ -193,12 +208,10 @@ direct link to the new note.
 
 ## Enhancement ideas
 
-1. **Multi-image messages** — expand the client picker to accept up to
-   4 images; the API route already loops.
-2. **Conversation folders** — group chats by topic when the list gets
+1. **Conversation folders** — group chats by topic when the list gets
    long.
-3. **Chat rename** — a small pencil on the header title.
-4. **Undo edit** — cache the previous message body for 30 s so a
+2. **Undo edit** — cache the previous message body for 30 s so a
    mis-edit can be reverted without losing the follow-up.
-5. **Speech language switcher** — surface `lang` picker for non-English
+3. **Speech language switcher** — surface `lang` picker for non-English
    dictation (the hook already accepts it as a parameter).
+4. **Reorder attachments** — drag-to-sort the preview grid before send.

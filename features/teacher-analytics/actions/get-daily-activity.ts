@@ -11,16 +11,29 @@ export interface DailyBucket {
   rejected: number;
 }
 
+export type TeacherActivityRange = "30" | "90" | "all";
+
+const RANGE_DAYS: Record<TeacherActivityRange, number> = {
+  "30": 30,
+  "90": 90,
+  "all": 365,
+};
+
 /**
- * Returns a 30-day series of approve/reject counts for the current
- * teacher. Grouping runs in JS because Supabase JS doesn't expose GROUP BY
- * without an RPC — at 30 days × ≤ 100 actions/day this is negligible.
+ * Approve/reject counts per day for the current teacher. Grouping runs
+ * in JS because Supabase JS doesn't expose GROUP BY without an RPC — at
+ * up to 365 days × a few actions each this is still negligible.
  *
- * We always return 30 buckets, even the empty ones — the chart needs a
- * continuous x-axis, not a sparse array.
+ * `range = "all"` caps at 365 days for chart legibility. Anything older
+ * than a year rarely tells the teacher a useful story that a 12-month
+ * window can't; if we ever ship yearly cohorts we'll switch to weekly
+ * bucketing for the cap.
+ *
+ * We always return `days` buckets, even the empty ones — the chart
+ * needs a continuous x-axis.
  */
 export async function getTeacherDailyActivity(
-  days = 30,
+  range: TeacherActivityRange = "30",
 ): Promise<Result<DailyBucket[], ActionError>> {
   const profile = await getMyProfile();
   if (!profile) return err({ code: "FORBIDDEN", message: "Complete onboarding first." });
@@ -29,6 +42,7 @@ export async function getTeacherDailyActivity(
   }
 
   const supabase = await getSupabaseServer();
+  const days = RANGE_DAYS[range];
 
   const start = new Date();
   start.setUTCHours(0, 0, 0, 0);

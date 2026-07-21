@@ -142,10 +142,22 @@ where at least one review happened. Empty when the audit table is empty,
 so brand-new students see a helpful "Study any deck and your streak
 starts here" prompt instead of a bare grid.
 
+## Weak-cards-only session (Module 49)
+
+`/app/flashcards/weak` runs `listWeakCards()` — cards where
+`total_reviews >= 3 AND lapses / total_reviews > 0.3` (same threshold
+as the deck-detail "Needs more practice" section, Module 38) — and
+hands them to `<ReviewSession>` with `exitHref="/app/flashcards"`.
+Ordered by lapse count desc so the toughest cards surface first. The
+same SM-2 side-effects apply: reviewing a weak card here updates its
+state exactly as if it were reviewed from the source deck.
+
+A dedicated CTA on `/app/flashcards` — "Drill N weak cards" — appears
+below the review-inbox button whenever `weakCount > 0`.
+
 ## Enhancement ideas
 
 1. **Voice-first review** — TTS the front, microphone the answer, transcribe + auto-mark against `back`.
 2. **Anki export** — dump a deck as a `.apkg` for students who already run Anki elsewhere.
 3. **Interleaved cross-subject inbox filter** — "just Math today" toggle on the inbox route.
 4. **Streak notifications** — remind the student before their streak breaks (needs a push-notification pipeline).
-5. **Weak-cards-only session** — a review-inbox variant that pulls just cards over the lapse threshold.

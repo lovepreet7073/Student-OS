@@ -11,13 +11,15 @@ import {
 import { formatRelativeTime } from "@/lib/format-date";
 import { cn } from "@/lib/utils";
 
-import type { DailyBucket } from "../actions/get-daily-activity";
+import type { DailyBucket, TeacherActivityRange } from "../actions/get-daily-activity";
 import type { TeacherAnalyticsOverview } from "../types";
 import { ActivityChart } from "./activity-chart";
+import { TimeRangeToggle } from "./time-range-toggle";
 
 interface Props {
   overview: TeacherAnalyticsOverview;
   daily: DailyBucket[] | null;
+  range: TeacherActivityRange;
   boardShort: string;
   className: string;
   mediumName: string;
@@ -35,10 +37,17 @@ interface Props {
 export function TeacherOverviewView({
   overview,
   daily,
+  range,
   boardShort,
   className,
   mediumName,
 }: Props) {
+  const rangeLabel =
+    range === "30"
+      ? "Last 30 days"
+      : range === "90"
+        ? "Last 90 days"
+        : "Last 12 months";
   const { stats, recentActivity, topContributors } = overview;
   const approvalRate =
     stats.approvedTotal + stats.rejectedTotal === 0
@@ -115,7 +124,10 @@ export function TeacherOverviewView({
 
       {daily ? (
         <section aria-label="Daily activity" className="mb-8">
-          <SectionHeader title="Last 30 days" />
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <SectionHeader title={rangeLabel} />
+            <TimeRangeToggle current={range} />
+          </div>
           <ActivityChart buckets={daily} />
         </section>
       ) : null}
