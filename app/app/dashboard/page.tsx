@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { ContinueCard } from "@/features/dashboard/components/continue-card";
 import { Fab } from "@/features/dashboard/components/fab";
+import { GetStartedChecklist } from "@/features/dashboard/components/get-started-checklist";
 import { GreetingHeader } from "@/features/dashboard/components/greeting-header";
 import { PracticeDueCard } from "@/features/dashboard/components/practice-due-card";
 import { StreakCard } from "@/features/dashboard/components/streak-card";
@@ -43,6 +44,8 @@ export default async function TodayPage() {
       />
 
       <div className="flex flex-col gap-5 pt-4 sm:gap-6 sm:pt-6">
+        <GetStartedChecklist />
+
         {streak ? <StreakCard stats={streak} /> : null}
 
         <ContinueCard />
